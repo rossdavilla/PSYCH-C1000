@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E1B4B">
+<meta name="description" content="A quick true-or-false game to get to know Dr. Ross Avilla, your PSYCH-C1000 instructor at Modesto Junior College.">
+<title>Know Your Professor — PSYCH-C1000</title>
+
+<link rel="icon" type="image/x-icon" href="assets/img/favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon/apple-touch-icon.png">
+<link rel="manifest" href="assets/img/favicon/site.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TOKENS  (matched to PSYCHC1000-syllabus.html)
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --purple:        #6D28D9;
+  --purple-dark:   #5B21B6;
+  --purple-darker: #4C1D95;
+  --purple-light:  #F5F3FF;
+  --orange:        #F37D26;
+  --indigo:        #1E1B4B;
+  --text:          #111827;
+  --text-muted:    #6B7280;
+  --border:        #E5E7EB;
+  --border-strong: #8B93A0;   /* 3.1:1 on white — for interactive outlines */
+  --bg:            #F9FAFB;
+  --white:         #FFFFFF;
+  --green:         #059669;
+  --green-bg:      #ECFDF5;
+  --green-border:  #A7F3D0;
+  --green-ink:     #065F46;
+  --red:           #DC2626;
+  --red-bg:        #FEF2F2;
+  --red-border:    #FECACA;
+  --red-ink:       #991B1B;
+  --radius:        14px;
+  --shadow:        0 2px 8px rgba(17,24,39,.08);
+  --shadow-lg:     0 10px 34px rgba(30,27,75,.18);
+  --font:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--indigo);
+  background-image:
+    radial-gradient(120% 80% at 50% 0%, #312E81 0%, #1E1B4B 55%, #15122E 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL — one screen fills the viewport, no page scroll
+   ═══════════════════════════════════════════════════════════ */
+.app {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+/* Float the app as a card only when there is real height to spare — a phone
+   held sideways should still use every pixel it has. */
+@media (min-width: 600px) and (min-height: 640px) {
+  body { display: flex; align-items: center; justify-content: center; padding: 24px 20px; }
+  .app {
+    height: min(860px, calc(100vh - 48px));
+    height: min(860px, calc(100dvh - 48px));
+    border-radius: 22px;
+  }
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar {
+  flex: none;
+  padding: max(14px, env(safe-area-inset-top)) 18px 12px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+.topbar[hidden] { display: none; }
+.topbar-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.counter {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.progress {
+  display: flex;
+  gap: 5px;
+  list-style: none;
+}
+.progress li {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: var(--border);
+  transition: background .3s ease, transform .3s ease;
+}
+.progress li.is-current { background: var(--purple); transform: scaleY(1.5); }
+.progress li.is-right   { background: var(--green); }
+.progress li.is-wrong   { background: var(--red); }
+
+/* ── STAGE / SCREENS ─────────────────────────────────────── */
+.stage { position: relative; flex: 1; min-height: 0; }
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--white);
+}
+.screen.is-active { display: flex; animation: screen-fade .26s ease; }
+@keyframes screen-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.screen.is-active .intro,
+.screen.is-active .q-body,
+.screen.is-active .r-body,
+.screen.is-active .results { animation: screen-rise .32s cubic-bezier(.22,.9,.32,1); }
+@keyframes screen-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 22px 18px 10px;
+  /* Shadows appear at the top/bottom edge only while there is more to scroll. */
+  background-color: var(--white);
+  background-image:
+    linear-gradient(var(--white), rgba(255,255,255,0)),
+    linear-gradient(rgba(255,255,255,0), var(--white)),
+    radial-gradient(farthest-side at 50% 0,    rgba(17,24,39,.14), rgba(17,24,39,0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(17,24,39,.14), rgba(17,24,39,0));
+  background-repeat: no-repeat;
+  background-size: 100% 26px, 100% 26px, 100% 13px, 100% 13px;
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+/* Intro and question screens read better optically centred on a tall phone. */
+#screen-intro .scroller,
+#screen-question .scroller { display: flex; flex-direction: column; }
+.intro, .q-body { margin-block: auto; }
+.actions {
+  flex: none;
+  padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 16px 18px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s ease, transform .1s ease, color .15s ease;
+  touch-action: manipulation;
+}
+.btn:active:not(:disabled) { transform: scale(.985); }
+.btn-primary { background: var(--purple); color: var(--white); }
+.btn-primary:hover:not(:disabled)  { background: var(--purple-dark); }
+.btn-primary:active:not(:disabled) { background: var(--purple-darker); }
+.btn-primary:disabled { background: var(--border); color: #5F6875; cursor: not-allowed; }
+.btn-ghost {
+  background: var(--white);
+  color: var(--purple);
+  border: 2px solid var(--border);
+  font-size: 15px;
+  padding: 13px 18px;
+}
+.btn-ghost:hover { background: var(--purple-light); border-color: #DDD6FE; }
+.link-out {
+  display: block;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 13px 4px;   /* keeps the tap target at 44px+ */
+}
+.link-out:hover { color: var(--purple); text-decoration: underline; }
+
+:where(button, a, [tabindex]):focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* ── INTRO SCREEN ────────────────────────────────────────── */
+.intro { text-align: center; padding-top: 8px; }
+.intro-portrait {
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 22%;
+  margin: 0 auto 18px;
+  display: block;
+  border: 4px solid var(--purple-light);
+  box-shadow: var(--shadow);
+  background: var(--bg);
+}
+.intro h1 {
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--purple-darker);
+  margin-bottom: 10px;
+}
+.intro .lede { font-size: 16px; color: var(--text); margin-bottom: 8px; }
+.intro .sub   { font-size: 14px; color: var(--text-muted); }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--purple-dark);
+  background: var(--purple-light);
+  border: 1px solid #E9E3FF;
+  border-radius: 99px;
+  padding: 6px 12px;
+}
+
+/* ── QUESTION SCREEN ─────────────────────────────────────── */
+.q-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.q-statement {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+  margin-bottom: 22px;
+}
+.q-statement:focus { outline: none; }
+@media (max-width: 360px) { .q-statement { font-size: 20px; } }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice {
+  appearance: none;
+  background: var(--white);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 20px 10px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.choice .mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+  color: transparent;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.choice:hover  { border-color: #DDD6FE; background: var(--purple-light); }
+.choice:active { transform: scale(.985); }
+.choice[aria-checked="true"] {
+  border-color: var(--purple);
+  background: var(--purple-light);
+  color: var(--purple-darker);
+}
+.choice[aria-checked="true"] .mark {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--white);
+}
+.q-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* ── REVEAL SCREEN ───────────────────────────────────────── */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 2px solid;
+  margin-bottom: 18px;
+}
+.verdict:focus { outline: none; }
+.verdict .icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  color: var(--white);
+  font-weight: 700;
+}
+.verdict .headline { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.verdict .sideline { font-size: 13px; font-weight: 500; opacity: .85; }
+.verdict.right { background: var(--green-bg); border-color: var(--green-border); color: var(--green-ink); }
+.verdict.right .icon { background: var(--green); }
+.verdict.wrong { background: var(--red-bg); border-color: var(--red-border); color: var(--red-ink); }
+.verdict.wrong .icon { background: var(--red); }
+
+.r-statement {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+  padding-left: 14px;
+  border-left: 4px solid var(--purple);
+  margin-bottom: 14px;
+}
+.answer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--indigo);
+  border-radius: 99px;
+  padding: 6px 13px;
+  margin-bottom: 14px;
+}
+.r-text { font-size: 15.5px; line-height: 1.65; color: #374151; }
+
+.r-figure { margin: 18px auto 4px; text-align: center; }
+.r-figure img {
+  display: block;
+  /* width + aspect-ratio come from the data (see renderReveal): some assets
+     carry DPI metadata that makes their intrinsic CSS size wrong. */
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin: 0 auto;
+  max-height: min(340px, 42dvh);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  background: var(--bg);
+}
+.r-figure figcaption {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.5;
+  margin-top: 9px;
+  max-width: 42ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── RESULTS SCREEN ──────────────────────────────────────── */
+@property --pct {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+.results { text-align: center; }
+.score-dial {
+  width: 150px;
+  height: 150px;
+  margin: 4px auto 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--purple) calc(var(--pct) * 1%), var(--border) 0);
+  transition: --pct .9s cubic-bezier(.22,.9,.32,1);
+}
+.score-dial .inner {
+  width: 122px;
+  height: 122px;
+  border-radius: 50%;
+  background: var(--white);
+  display: grid;
+  place-items: center;
+  align-content: center;
+}
+.score-dial .num {
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--purple-darker);
+  font-variant-numeric: tabular-nums;
+}
+.score-dial .den { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 5px; }
+.results h2 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.results h2:focus { outline: none; }
+.results .blurb { font-size: 15px; color: var(--text-muted); margin-bottom: 24px; }
+
+.recap-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  margin-bottom: 10px;
+}
+.recap { list-style: none; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.recap li {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-left-width: 4px;
+  border-radius: 10px;
+  background: var(--bg);
+}
+.recap li.right { border-left-color: var(--green); }
+.recap li.wrong { border-left-color: var(--red); }
+.recap .tick {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--white);
+}
+.recap li.right .tick { background: var(--green); }
+.recap li.wrong  .tick { background: var(--red); }
+.recap .body { min-width: 0; }
+.recap .stmt { font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--text); }
+.recap .meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.recap .meta b { color: var(--purple-dark); font-weight: 700; }
+
+/* ── MOTION PREFERENCES ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── TOP BAR ─────────────────────────────────────────── -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-row">
+      <span class="eyebrow">Know Your Professor</span>
+      <span class="counter" id="counter"></span>
+    </div>
+    <ul class="progress" id="progress" aria-hidden="true"></ul>
+  </header>
+
+  <!-- ── STAGE ───────────────────────────────────────────── -->
+  <main class="stage">
+
+    <!-- INTRO -->
+    <section class="screen is-active" id="screen-intro" aria-labelledby="introTitle">
+      <div class="scroller">
+        <div class="intro">
+          <img class="intro-portrait" src="assets/img/Ross2026-pikachu.JPG"
+               alt="Dr. Ross Avilla" width="1071" height="724">
+          <h1 id="introTitle" tabindex="-1">Know Your Professor</h1>
+          <p class="lede">Some of these statements about <strong>Dr. Avilla</strong> are true. Some are completely false.</p>
+          <p class="sub">Take your best guess at each one — you'll find out the real story right after you answer.</p>
+          <div class="chips">
+            <span class="chip" id="chipCount">5 statements</span>
+            <span class="chip">True or false</span>
+            <span class="chip">≈ 3 minutes</span>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnStart" type="button">Let's play →</button>
+      </div>
+    </section>
+
+    <!-- QUESTION -->
+    <section class="screen" id="screen-question" aria-labelledby="qStatement">
+      <div class="scroller">
+        <div class="q-body">
+        <p class="q-kicker" id="qKicker"></p>
+        <h2 class="q-statement" id="qStatement" tabindex="-1"></h2>
+        <div class="choices" role="radiogroup" aria-labelledby="qStatement" id="choices">
+          <button class="choice" type="button" role="radio" aria-checked="false" data-value="true" id="choiceTrue">
+            <span class="mark" aria-hidden="true">✓</span>
+            <span>True</span>
+          </button>
+          <button class="choice" type="button" role="radio" aria-checked="false" data-value="false" id="choiceFalse">
+            <span class="mark" aria-hidden="true">✓</span>
+            <span>False</span>
+          </button>
+        </div>
+        <p class="q-hint" id="qHint">Pick one, then tap Submit.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnSubmit" type="button" disabled>Submit</button>
+      </div>
+    </section>
+
+    <!-- REVEAL -->
+    <section class="screen" id="screen-reveal" aria-labelledby="verdictHeadline">
+      <div class="scroller" id="revealScroller">
+        <div class="r-body">
+        <div class="verdict" id="verdict" tabindex="-1">
+          <span class="icon" id="verdictIcon" aria-hidden="true"></span>
+          <span>
+            <span class="headline" id="verdictHeadline"></span><br>
+            <span class="sideline" id="verdictSideline"></span>
+          </span>
+        </div>
+        <p class="r-statement" id="rStatement"></p>
+        <p class="answer-pill" id="answerPill"></p>
+        <p class="r-text" id="rText"></p>
+        <figure class="r-figure" id="rFigure" hidden>
+          <img id="rImage" src="" alt="" width="" height="">
+          <figcaption id="rCaption"></figcaption>
+        </figure>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnNext" type="button">Next →</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="screen" id="screen-results" aria-labelledby="resultsTitle">
+      <div class="scroller">
+        <div class="results">
+          <div class="score-dial" id="scoreDial" style="--pct:0" aria-hidden="true">
+            <div class="inner">
+              <span class="num" id="scoreNum">0</span>
+              <span class="den" id="scoreDen">out of 5</span>
+            </div>
+          </div>
+          <h2 id="resultsTitle" tabindex="-1"></h2>
+          <p class="blurb" id="resultsBlurb"></p>
+          <p class="recap-title">How you did</p>
+          <ul class="recap" id="recap" role="list"></ul>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnRestart" type="button">Play again</button>
+        <a class="link-out" id="linkSyllabus" href="PSYCHC1000-syllabus.html">← Back to the syllabus</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<p class="sr-only" id="liveRegion" role="status" aria-live="polite"></p>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   DATA — lifted from the "Know Your Professor" section of
+   PSYCHC1000-syllabus.html
+   ═══════════════════════════════════════════════════════════ */
+const STATEMENTS = [
+  {
+    statement: 'Dr. Avilla has spent his entire life in the Central Valley.',
+    isTrue: true,
+    reveal: 'Dr. Avilla grew up in Merced County (Stevinson, to be exact), went to Hilmar High School, earned his BA at CSU Stanislaus, then his PhD at UC Davis — and has returned to Turlock/Modesto to live and teach. 209 for life!',
+    image: 'assets/img/pets-1.png',
+    imageAlt: 'A young Dr. Avilla with his first dog, Andrew',
+    width: 242,
+    height: 346,
+    imgMaxWidth: '220px',
+    caption: 'Dr. Avilla moved to Stevinson when he was 5-years old. Here he is with his first dog, Andrew. He lived to be 22 years old! (the dog, not Dr. Avilla)'
+  },
+  {
+    statement: 'Dr. Avilla knew he wanted to be a professor as soon as he started college.',
+    isTrue: false,
+    reveal: 'When Dr. Avilla went to college, he had no idea what he wanted to do. Graphic designer? Geologist? College dropout? He considered them all! He eventually found his love for psychology, but becoming a professor wasn’t the plan until well into his senior year. It’s never too late to change your mind!',
+    image: 'assets/img/band4.jpg',
+    imageAlt: 'Dr. Avilla in his college band',
+    width: 400,
+    height: 300,
+    imgMaxWidth: '250px',
+    caption: 'Dr. Avilla waaaaaay back in his first year of college. And yes, he was in a band. And no, nothing from that band exists on the internet (thank god).'
+  },
+  {
+    statement: 'Dr. Avilla loves anime.',
+    isTrue: true,
+    reveal: 'Dr. Avilla has been watching anime since the 90s — back when he had to download episodes over dial-up internet! He’s also an avid manga reader. If you have a suggestion (or want one), let him know.',
+    image: 'assets/img/the-end-of-evangelion.jpg',
+    imageAlt: 'Still from The End of Evangelion',
+    width: 640,
+    height: 360,
+    imgMaxWidth: '100%',
+    caption: 'Dr. Avilla’s favorite anime ever. If you know, you know.'
+  },
+  {
+    statement: 'Dr. Avilla has been to 10 different countries (other than the United States).',
+    isTrue: false,
+    reveal: 'Are you kidding? In this economy?? Dr. Avilla has never even been outside of the United States. While he dreams of visiting far-off places like Japan, a $2,000, 18+ hour plane ride is not happening anytime soon.',
+    image: null
+  },
+  {
+    statement: 'Dr. Avilla grew up on a farm.',
+    isTrue: true,
+    reveal: 'Dr. Avilla grew up on a farm with 30+ cows, 5 llamas, 1 donkey, dozens of chickens, 5 dogs, and 11 cats — not to mention the wild neighbors: rabbits, foxes, raccoons, coyotes, and the occasional mountain lion.',
+    image: 'assets/img/pets-4.png',
+    imageAlt: 'George the llama on the family farm',
+    width: 507,
+    height: 322,
+    imgMaxWidth: '100%',
+    caption: 'Dr. Avilla’s prized llama, George. I mean, George didn’t win any prizes for anything, but he was Dr. Avilla’s favorite llama.'
+  }
+];
+
+const TOTAL = STATEMENTS.length;
+
+/* Score-tiered closing messages, keyed by number correct. */
+const OUTCOMES = [
+  { min: 1.00, title: 'Flawless.',              blurb: 'A perfect score. Either you’re an outstanding guesser, or you and Dr. Avilla are going to get along just fine.' },
+  { min: 0.80, title: 'Seriously impressive.',  blurb: 'You read him almost perfectly — barely anything slipped past you.' },
+  { min: 0.60, title: 'Solid work.',            blurb: 'More right than wrong. You’ve already got a decent read on your professor.' },
+  { min: 0.40, title: 'Right down the middle.', blurb: 'Half and half. Turns out professors are harder to predict than they look.' },
+  { min: 0.20, title: 'Well, now you know.',    blurb: 'Most of those caught you off guard — which is exactly the point of this exercise.' },
+  { min: 0.00, title: 'Not even close!',        blurb: 'A clean sweep in the wrong direction. Impressive in its own way, honestly. Come say hi in class.' }
+];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
+let index = 0;            // which statement we are on
+let selection = null;     // true | false | null — the pending answer
+let results = [];         // { guess, correct } per statement
+let locked = false;       // swallows the stray second tap of a double-tap
+let lockTimer = null;
+
+/* ═══════════════════════════════════════════════════════════
+   ELEMENTS
+   ═══════════════════════════════════════════════════════════ */
+const $ = (id) => document.getElementById(id);
+
+const screens = {
+  intro:    $('screen-intro'),
+  question: $('screen-question'),
+  reveal:   $('screen-reveal'),
+  results:  $('screen-results')
+};
+
+const topbar    = $('topbar');
+const counterEl = $('counter');
+const progressEl = $('progress');
+const liveRegion = $('liveRegion');
+
+const choiceTrue  = $('choiceTrue');
+const choiceFalse = $('choiceFalse');
+const choiceEls   = [choiceTrue, choiceFalse];
+
+/* ═══════════════════════════════════════════════════════════
+   SETUP
+   ═══════════════════════════════════════════════════════════ */
+function init() {
+  $('chipCount').textContent = TOTAL + ' statements';
+  $('scoreDen').textContent = 'out of ' + TOTAL;
+
+  progressEl.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) progressEl.appendChild(document.createElement('li'));
+
+  $('btnStart').addEventListener('click', startGame);
+  $('btnSubmit').addEventListener('click', submitAnswer);
+  $('btnNext').addEventListener('click', nextStep);
+  $('btnRestart').addEventListener('click', startGame);
+  // An anchor cannot be gated by the handler guards, so gate it here.
+  $('linkSyllabus').addEventListener('click', (event) => {
+    if (locked) event.preventDefault();
+  });
+
+  choiceEls.forEach((btn) => {
+    btn.addEventListener('click', () => select(btn.dataset.value === 'true'));
+    btn.addEventListener('keydown', onChoiceKeydown);
+  });
+
+  preloadImages();
+  locked = false;
+}
+
+/* Warm the cache so reveal photos appear instantly on a phone. */
+function preloadImages() {
+  STATEMENTS.forEach((s) => {
+    if (!s.image) return;
+    const img = new Image();
+    img.src = s.image;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN SWITCHING
+   ═══════════════════════════════════════════════════════════ */
+/* The action buttons sit at the same spot on every screen, so a fast
+   double-tap would otherwise fire the *next* screen's button too. Ignore
+   input for one transition's worth of time after each screen change. */
+function lockInput() {
+  locked = true;
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(() => { locked = false; }, 420);
+}
+
+function showScreen(name, focusEl) {
+  lockInput();
+  Object.keys(screens).forEach((key) => {
+    screens[key].classList.toggle('is-active', key === name);
+  });
+  const scroller = screens[name].querySelector('.scroller');
+  if (scroller) scroller.scrollTop = 0;
+  if (focusEl) {
+    // Wait for the screen to be painted before moving focus.
+    requestAnimationFrame(() => focusEl.focus({ preventScroll: true }));
+  }
+}
+
+function announce(msg) {
+  liveRegion.textContent = '';
+  // Re-set on the next frame so repeat messages are still announced.
+  requestAnimationFrame(() => { liveRegion.textContent = msg; });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GAME FLOW
+   ═══════════════════════════════════════════════════════════ */
+function startGame() {
+  if (locked) return;
+  index = 0;
+  results = [];
+  updateProgress();
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const item = STATEMENTS[index];
+  selection = null;
+
+  topbar.hidden = false;
+  counterEl.textContent = 'Question ' + (index + 1) + ' of ' + TOTAL;
+  updateProgress();
+
+  $('qKicker').textContent = 'True or false?';
+  $('qStatement').textContent = item.statement;
+  $('qHint').textContent = 'Pick one, then tap Submit.';
+
+  choiceEls.forEach((btn, i) => {
+    btn.setAttribute('aria-checked', 'false');
+    btn.tabIndex = i === 0 ? 0 : -1;
+  });
+
+  $('btnSubmit').disabled = true;
+
+  showScreen('question', $('qStatement'));
+}
+
+function select(value) {
+  if (locked) return;
+  selection = value;
+  choiceEls.forEach((btn) => {
+    const isPicked = (btn.dataset.value === 'true') === value;
+    btn.setAttribute('aria-checked', String(isPicked));
+    btn.tabIndex = isPicked ? 0 : -1;
+  });
+  $('btnSubmit').disabled = false;
+}
+
+function onChoiceKeydown(event) {
+  const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+  if (keys.indexOf(event.key) === -1) return;
+  event.preventDefault();
+  const current = choiceEls.indexOf(event.currentTarget);
+  const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+  const next = (current + (forward ? 1 : -1) + choiceEls.length) % choiceEls.length;
+  select(choiceEls[next].dataset.value === 'true');
+  choiceEls[next].focus();
+}
+
+function submitAnswer() {
+  // No lock here: reaching Submit requires picking a choice first, and a
+  // ghost tap landing on the next screen's Submit finds it disabled anyway.
+  if (selection === null) return;
+
+  const item = STATEMENTS[index];
+  const correct = selection === item.isTrue;
+  results[index] = { guess: selection, correct: correct };
+
+  renderReveal(item, correct);
+}
+
+function renderReveal(item, correct) {
+  counterEl.textContent = 'Answer ' + (index + 1) + ' of ' + TOTAL;
+  updateProgress();
+
+  const verdict = $('verdict');
+  verdict.classList.toggle('right', correct);
+  verdict.classList.toggle('wrong', !correct);
+  $('verdictIcon').textContent = correct ? '✓' : '✕';
+  $('verdictHeadline').textContent = correct ? 'You got it!' : 'Not quite.';
+  $('verdictSideline').textContent = correct
+    ? 'That one is ' + (item.isTrue ? 'true' : 'false') + '.'
+    : 'You said ' + (results[index].guess ? 'true' : 'false') + '.';
+
+  $('rStatement').textContent = item.statement;
+  $('answerPill').textContent = item.isTrue ? 'The answer: True' : 'The answer: False';
+  $('rText').textContent = item.reveal;
+
+  const figure = $('rFigure');
+  if (item.image) {
+    const img = $('rImage');
+    img.src = item.image;
+    img.alt = item.imageAlt || '';
+    img.width = item.width || '';
+    img.height = item.height || '';
+    img.style.width = item.imgMaxWidth || '100%';
+    img.style.aspectRatio = item.width && item.height
+      ? item.width + ' / ' + item.height
+      : 'auto';
+    $('rCaption').textContent = item.caption || '';
+    figure.hidden = false;
+  } else {
+    figure.hidden = true;
+    $('rImage').removeAttribute('src');
+    $('rCaption').textContent = '';
+  }
+
+  const last = index === TOTAL - 1;
+  $('btnNext').textContent = last ? 'See my score →' : 'Next statement →';
+
+  showScreen('reveal', verdict);
+  announce((correct ? 'Correct. ' : 'Incorrect. ')
+    + 'The answer is ' + (item.isTrue ? 'true' : 'false') + '.');
+}
+
+function nextStep() {
+  if (locked) return;
+  if (index < TOTAL - 1) {
+    index++;
+    renderQuestion();
+  } else {
+    renderResults();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS BAR
+   ═══════════════════════════════════════════════════════════ */
+function updateProgress() {
+  const pips = progressEl.children;
+  for (let i = 0; i < pips.length; i++) {
+    const pip = pips[i];
+    pip.className = '';
+    if (results[i]) pip.classList.add(results[i].correct ? 'is-right' : 'is-wrong');
+    else if (i === index) pip.classList.add('is-current');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESULTS
+   ═══════════════════════════════════════════════════════════ */
+function renderResults() {
+  const score = results.filter((r) => r && r.correct).length;
+  const ratio = score / TOTAL;
+  const outcome = OUTCOMES.find((o) => ratio >= o.min) || OUTCOMES[OUTCOMES.length - 1];
+
+  topbar.hidden = true;
+
+  $('scoreNum').textContent = score;
+  $('scoreDen').textContent = 'out of ' + TOTAL;
+  const dial = $('scoreDial');
+  dial.style.setProperty('--pct', '0');
+
+  const title = $('resultsTitle');
+  title.textContent = outcome.title;
+  $('resultsBlurb').textContent = 'You got ' + score + ' of ' + TOTAL
+    + ' right. ' + outcome.blurb;
+
+  const recap = $('recap');
+  recap.innerHTML = '';
+  STATEMENTS.forEach((item, i) => {
+    const res = results[i] || { guess: null, correct: false };
+    const li = document.createElement('li');
+    li.setAttribute('role', 'listitem');   // .recap li is display:flex, which
+    li.className = res.correct ? 'right' : 'wrong';   // drops the implicit role
+
+    const tick = document.createElement('span');
+    tick.className = 'tick';
+    tick.setAttribute('aria-hidden', 'true');
+    tick.textContent = res.correct ? '✓' : '✕';
+
+    const body = document.createElement('div');
+    body.className = 'body';
+
+    const stmt = document.createElement('p');
+    stmt.className = 'stmt';
+    stmt.textContent = item.statement;
+
+    const meta = document.createElement('p');
+    meta.className = 'meta';
+    const answer = item.isTrue ? 'TRUE' : 'FALSE';
+    if (res.correct) {
+      meta.innerHTML = 'Correct — that one is <b>' + answer + '</b>.';
+    } else {
+      meta.innerHTML = 'You said ' + (res.guess ? 'true' : 'false')
+        + ' — it is actually <b>' + answer + '</b>.';
+    }
+
+    body.appendChild(stmt);
+    body.appendChild(meta);
+    li.appendChild(tick);
+    li.appendChild(body);
+    recap.appendChild(li);
+  });
+
+  showScreen('results', title);
+  // Let the dial sweep up from zero once the screen is on-stage. The timer is
+  // a fallback: if rAF is throttled (background tab), the dial must still end
+  // up showing the real score rather than an empty ring.
+  const pct = String(Math.round(ratio * 100));
+  const fill = () => dial.style.setProperty('--pct', pct);
+  requestAnimationFrame(() => requestAnimationFrame(fill));
+  setTimeout(fill, 150);
+  announce('Quiz complete. You scored ' + score + ' out of ' + TOTAL + '.');
+}
+
+init();
+</script>
+</body>
+</html>
