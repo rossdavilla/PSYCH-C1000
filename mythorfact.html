@@ -233,23 +233,6 @@ body {
 }
 .intro .lede { font-size: 16px; color: var(--text); margin-bottom: 8px; }
 .intro .sub   { font-size: 14px; color: var(--text-muted); }
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 20px;
-}
-.chip {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--purple-dark);
-  background: var(--purple-light);
-  border: 1px solid #E9E3FF;
-  border-radius: 99px;
-  padding: 6px 12px;
-}
-
 /* ── QUESTION SCREEN ─────────────────────────────────────── */
 .q-kicker {
   font-size: 12px;
@@ -516,11 +499,6 @@ body {
           <h1 id="introTitle" tabindex="-1">Myth or Fact?</h1>
           <p class="lede">You get <strong>one</strong> statement about psychology. Your job is to decide whether it is true or false.</p>
           <p class="sub">Lock in your answer whenever you are ready. The answer stays hidden until Dr. Avilla gives the class the magic word.</p>
-          <div class="chips">
-            <span class="chip">One statement</span>
-            <span class="chip">True or false</span>
-            <span class="chip" id="chipDeck"></span>
-          </div>
         </div>
       </div>
       <div class="actions">
@@ -1172,8 +1150,6 @@ const choiceEls   = [choiceTrue, choiceFalse];
    SETUP
    ═══════════════════════════════════════════════════════════ */
 function init() {
-  $('chipDeck').textContent = DECK_SIZE + ' in the deck';
-
   $('btnStart').addEventListener('click', showQuestion);
   $('btnSubmit').addEventListener('click', submitAnswer);
   $('btnReveal').addEventListener('click', tryReveal);
