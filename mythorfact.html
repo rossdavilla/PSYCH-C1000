@@ -193,17 +193,6 @@ body {
 .btn-primary:hover:not(:disabled)  { background: var(--purple-dark); }
 .btn-primary:active:not(:disabled) { background: var(--purple-darker); }
 .btn-primary:disabled { background: var(--border); color: #5F6875; cursor: not-allowed; }
-.link-out {
-  display: block;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-decoration: none;
-  padding: 13px 4px;   /* keeps the tap target at 44px+ */
-}
-.link-out:hover { color: var(--purple); text-decoration: underline; }
-
 :where(button, a, input, [tabindex]):focus-visible {
   outline: 3px solid var(--purple);
   outline-offset: 2px;
@@ -445,14 +434,6 @@ body {
   margin-bottom: 6px;
 }
 .r-text { font-size: 15.5px; line-height: 1.65; color: #374151; }
-.r-footnote {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  border-top: 1px solid var(--border);
-  margin-top: 20px;
-  padding-top: 14px;
-}
 
 /* ── MOTION PREFERENCES ──────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -568,12 +549,10 @@ body {
         <p class="answer-pill" id="answerPill"></p>
         <p class="r-label">Here's the thing</p>
         <p class="r-text" id="rText"></p>
-        <p class="r-footnote" id="rFootnote"></p>
         </div>
       </div>
       <div class="actions">
         <button class="btn btn-primary" id="btnAgain" type="button">Deal me another →</button>
-        <a class="link-out" href="PSYCHC1000-syllabus.html">← Back to the syllabus</a>
       </div>
     </section>
 
@@ -1306,7 +1285,7 @@ function tryReveal() {
 function renderReveal() {
   const correct = selection === isTrueStatement;
 
-  counterEl.textContent = 'Statement #' + card.n + ' · revealed';
+  counterEl.textContent = '';   // the number has done its job by now
 
   const verdict = $('verdict');
   verdict.classList.toggle('right', correct);
@@ -1320,10 +1299,6 @@ function renderReveal() {
   $('rStatement').textContent = card.s;
   $('answerPill').textContent = isTrueStatement ? 'The answer: True' : 'The answer: False';
   $('rText').textContent = card.e;
-  $('rFootnote').textContent = isTrueStatement
-    ? 'Statement #' + card.n + ' · ' + card.t + ' · from 80 Psychology Facts That Surprise Most People'
-    : 'Statement #' + card.n + ' · ' + card.t + ' · from Psychology Myths, where every statement is false';
-
   showScreen('reveal', verdict);
   announce((correct ? 'Correct. ' : 'Incorrect. ')
     + 'The answer is ' + (isTrueStatement ? 'true' : 'false') + '.');
