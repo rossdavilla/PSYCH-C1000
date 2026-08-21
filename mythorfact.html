@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1E1B4B">
+<meta name="description" content="A one-statement true-or-false warm-up for PSYCH-C1000 at Modesto Junior College. Answer first; the answer unlocks when your instructor gives the magic word.">
+<title>Myth or Fact? — PSYCH-C1000</title>
+
+<link rel="icon" type="image/x-icon" href="assets/img/favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/img/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/img/favicon/apple-touch-icon.png">
+<link rel="manifest" href="assets/img/favicon/site.webmanifest">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TOKENS  (matched to PSYCHC1000-syllabus.html / knowyourprof.html)
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  --purple:        #6D28D9;
+  --purple-dark:   #5B21B6;
+  --purple-darker: #4C1D95;
+  --purple-light:  #F5F3FF;
+  --orange:        #F37D26;
+  --indigo:        #1E1B4B;
+  --text:          #111827;
+  --text-muted:    #6B7280;
+  --border:        #E5E7EB;
+  --border-strong: #8B93A0;   /* 3.1:1 on white — for interactive outlines */
+  --bg:            #F9FAFB;
+  --white:         #FFFFFF;
+  --green:         #059669;
+  --green-bg:      #ECFDF5;
+  --green-border:  #A7F3D0;
+  --green-ink:     #065F46;
+  --red:           #DC2626;
+  --red-bg:        #FEF2F2;
+  --red-border:    #FECACA;
+  --red-ink:       #991B1B;
+  --radius:        14px;
+  --shadow:        0 2px 8px rgba(17,24,39,.08);
+  --shadow-lg:     0 10px 34px rgba(30,27,75,.18);
+  --font:          'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--indigo);
+  background-image:
+    radial-gradient(120% 80% at 50% 0%, #312E81 0%, #1E1B4B 55%, #15122E 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL — one screen fills the viewport, no page scroll
+   ═══════════════════════════════════════════════════════════ */
+.app {
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+/* Float the app as a card only when there is real height to spare — a phone
+   held sideways should still use every pixel it has. */
+@media (min-width: 600px) and (min-height: 640px) {
+  body { display: flex; align-items: center; justify-content: center; padding: 24px 20px; }
+  .app {
+    height: min(860px, calc(100vh - 48px));
+    height: min(860px, calc(100dvh - 48px));
+    border-radius: 22px;
+  }
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────── */
+.topbar {
+  flex: none;
+  padding: max(14px, env(safe-area-inset-top)) 18px 13px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+.topbar[hidden] { display: none; }
+.topbar-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--purple);
+}
+.counter {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── STAGE / SCREENS ─────────────────────────────────────── */
+.stage { position: relative; flex: 1; min-height: 0; }
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: var(--white);
+}
+.screen.is-active { display: flex; animation: screen-fade .26s ease; }
+@keyframes screen-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.screen.is-active .intro,
+.screen.is-active .q-body,
+.screen.is-active .r-body { animation: screen-rise .32s cubic-bezier(.22,.9,.32,1); }
+@keyframes screen-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 22px 18px 10px;
+  /* Shadows appear at the top/bottom edge only while there is more to scroll. */
+  background-color: var(--white);
+  background-image:
+    linear-gradient(var(--white), rgba(255,255,255,0)),
+    linear-gradient(rgba(255,255,255,0), var(--white)),
+    radial-gradient(farthest-side at 50% 0,    rgba(17,24,39,.14), rgba(17,24,39,0)),
+    radial-gradient(farthest-side at 50% 100%, rgba(17,24,39,.14), rgba(17,24,39,0));
+  background-repeat: no-repeat;
+  background-size: 100% 26px, 100% 26px, 100% 13px, 100% 13px;
+  background-position: 0 0, 0 100%, 0 0, 0 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+/* Intro, question and hold screens read better optically centred on a tall phone. */
+#screen-intro .scroller,
+#screen-question .scroller,
+#screen-hold .scroller { display: flex; flex-direction: column; }
+.intro, .q-body { margin-block: auto; }
+.actions {
+  flex: none;
+  padding: 12px 18px calc(14px + env(safe-area-inset-bottom));
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn {
+  width: 100%;
+  padding: 16px 18px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s ease, transform .1s ease, color .15s ease;
+  touch-action: manipulation;
+}
+.btn:active:not(:disabled) { transform: scale(.985); }
+.btn-primary { background: var(--purple); color: var(--white); }
+.btn-primary:hover:not(:disabled)  { background: var(--purple-dark); }
+.btn-primary:active:not(:disabled) { background: var(--purple-darker); }
+.btn-primary:disabled { background: var(--border); color: #5F6875; cursor: not-allowed; }
+.link-out {
+  display: block;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 13px 4px;   /* keeps the tap target at 44px+ */
+}
+.link-out:hover { color: var(--purple); text-decoration: underline; }
+
+:where(button, a, input, [tabindex]):focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* ── INTRO SCREEN ────────────────────────────────────────── */
+.intro { text-align: center; padding-top: 8px; }
+.intro-badge {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  margin: 0 auto 18px;
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  background: var(--purple-light);
+  border: 2px solid #E9E3FF;
+}
+.intro h1 {
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--purple-darker);
+  margin-bottom: 10px;
+}
+.intro .lede { font-size: 16px; color: var(--text); margin-bottom: 8px; }
+.intro .sub   { font-size: 14px; color: var(--text-muted); }
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--purple-dark);
+  background: var(--purple-light);
+  border: 1px solid #E9E3FF;
+  border-radius: 99px;
+  padding: 6px 12px;
+}
+
+/* ── QUESTION SCREEN ─────────────────────────────────────── */
+.q-kicker {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.q-statement {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+  margin-bottom: 22px;
+}
+.q-statement:focus { outline: none; }
+@media (max-width: 360px) { .q-statement { font-size: 20px; } }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.choice {
+  appearance: none;
+  background: var(--white);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 20px 10px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.choice .mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--border-strong);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+  color: transparent;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.choice:hover  { border-color: #DDD6FE; background: var(--purple-light); }
+.choice:active { transform: scale(.985); }
+.choice[aria-checked="true"] {
+  border-color: var(--purple);
+  background: var(--purple-light);
+  color: var(--purple-darker);
+}
+.choice[aria-checked="true"] .mark {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: var(--white);
+}
+.q-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 16px;
+}
+
+/* ── HOLD SCREEN (the magic-word gate) ───────────────────── */
+.locked-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--purple-darker);
+  background: var(--purple-light);
+  border: 1px solid #E9E3FF;
+  border-radius: 99px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+}
+.locked-pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--purple);
+}
+.hold-stmt {
+  font-size: 16.5px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--text);
+  padding-left: 14px;
+  border-left: 4px solid var(--purple);
+  margin-bottom: 26px;
+}
+.hold-stmt:focus { outline: none; }
+.magic-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 9px;
+}
+.magic-input {
+  width: 100%;
+  padding: 16px 16px;
+  font-family: var(--font);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  background: var(--bg);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--radius);
+  transition: border-color .15s ease, background .15s ease;
+}
+.magic-input::placeholder { font-weight: 500; color: #9AA1AC; letter-spacing: .04em; }
+.magic-input:focus { outline: none; border-color: var(--purple); background: var(--white); }
+.magic-input:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+.magic-input.is-wrong { border-color: var(--red); background: var(--red-bg); animation: shake .4s ease; }
+@keyframes shake {
+  10%, 90% { transform: translateX(-2px); }
+  20%, 80% { transform: translateX(4px); }
+  30%, 50%, 70% { transform: translateX(-6px); }
+  40%, 60% { transform: translateX(6px); }
+}
+.magic-help {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin-top: 11px;
+}
+.magic-error {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--red-ink);
+  background: var(--red-bg);
+  border: 1px solid var(--red-border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin-top: 11px;
+}
+.magic-error[hidden] { display: none; }
+
+/* ── REVEAL SCREEN ───────────────────────────────────────── */
+.verdict {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 2px solid;
+  margin-bottom: 18px;
+}
+.verdict:focus { outline: none; }
+.verdict .icon {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  color: var(--white);
+  font-weight: 700;
+}
+.verdict .headline { font-size: 17px; font-weight: 800; line-height: 1.25; }
+.verdict .sideline { font-size: 13px; font-weight: 500; opacity: .85; }
+.verdict.right { background: var(--green-bg); border-color: var(--green-border); color: var(--green-ink); }
+.verdict.right .icon { background: var(--green); }
+.verdict.wrong { background: var(--red-bg); border-color: var(--red-border); color: var(--red-ink); }
+.verdict.wrong .icon { background: var(--red); }
+
+.r-statement {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text);
+  padding-left: 14px;
+  border-left: 4px solid var(--purple);
+  margin-bottom: 14px;
+}
+.answer-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--indigo);
+  border-radius: 99px;
+  padding: 6px 13px;
+  margin-bottom: 14px;
+}
+.r-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.r-text { font-size: 15.5px; line-height: 1.65; color: #374151; }
+.r-footnote {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 14px;
+}
+
+/* ── MOTION PREFERENCES ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* visually hidden but available to screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ── TOP BAR ─────────────────────────────────────────── -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-row">
+      <span class="eyebrow">Myth or Fact?</span>
+      <span class="counter" id="counter"></span>
+    </div>
+  </header>
+
+  <!-- ── STAGE ───────────────────────────────────────────── -->
+  <main class="stage">
+
+    <!-- INTRO -->
+    <section class="screen is-active" id="screen-intro" aria-labelledby="introTitle">
+      <div class="scroller">
+        <div class="intro">
+          <div class="intro-badge" aria-hidden="true">🧠</div>
+          <h1 id="introTitle" tabindex="-1">Myth or Fact?</h1>
+          <p class="lede">You get <strong>one</strong> statement about psychology. Your job is to decide whether it is true or false.</p>
+          <p class="sub">Lock in your answer whenever you are ready. The answer stays hidden until Dr. Avilla gives the class the magic word.</p>
+          <div class="chips">
+            <span class="chip">One statement</span>
+            <span class="chip">True or false</span>
+            <span class="chip" id="chipDeck"></span>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnStart" type="button">Deal me a statement →</button>
+      </div>
+    </section>
+
+    <!-- QUESTION -->
+    <section class="screen" id="screen-question" aria-labelledby="qStatement">
+      <div class="scroller">
+        <div class="q-body">
+        <p class="q-kicker" id="qKicker"></p>
+        <h2 class="q-statement" id="qStatement" tabindex="-1"></h2>
+        <div class="choices" role="radiogroup" aria-labelledby="qStatement" id="choices">
+          <button class="choice" type="button" role="radio" aria-checked="false" data-value="true" id="choiceTrue">
+            <span class="mark" aria-hidden="true">✓</span>
+            <span>True</span>
+          </button>
+          <button class="choice" type="button" role="radio" aria-checked="false" data-value="false" id="choiceFalse">
+            <span class="mark" aria-hidden="true">✓</span>
+            <span>False</span>
+          </button>
+        </div>
+        <p class="q-hint">Pick one, then tap Lock it in. You cannot change it afterward.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnSubmit" type="button" disabled>Lock it in</button>
+      </div>
+    </section>
+
+    <!-- HOLD — answer submitted, waiting on the magic word -->
+    <section class="screen" id="screen-hold" aria-labelledby="holdTitle">
+      <div class="scroller">
+        <div class="q-body">
+          <p class="locked-pill" id="holdTitle" tabindex="-1">
+            <span class="dot" aria-hidden="true"></span>
+            <span>Locked in: you said <strong id="holdChoice"></strong></span>
+          </p>
+          <p class="hold-stmt" id="holdStatement"></p>
+          <label class="magic-label" for="magicInput">Magic word</label>
+          <input class="magic-input" id="magicInput" type="text" inputmode="text"
+                 autocomplete="off" autocapitalize="none" autocorrect="off"
+                 spellcheck="false" enterkeyhint="go" placeholder="type it here"
+                 aria-describedby="magicHelp">
+          <p class="magic-error" id="magicError" role="alert" hidden></p>
+          <p class="magic-help" id="magicHelp">Dr. Avilla will give the word when the whole class has answered. Capital letters and quotation marks are both fine.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnReveal" type="button">Unlock the answer</button>
+      </div>
+    </section>
+
+    <!-- REVEAL -->
+    <section class="screen" id="screen-reveal" aria-labelledby="verdictHeadline">
+      <div class="scroller">
+        <div class="r-body">
+        <div class="verdict" id="verdict" tabindex="-1">
+          <span class="icon" id="verdictIcon" aria-hidden="true"></span>
+          <span>
+            <span class="headline" id="verdictHeadline"></span><br>
+            <span class="sideline" id="verdictSideline"></span>
+          </span>
+        </div>
+        <p class="r-statement" id="rStatement"></p>
+        <p class="answer-pill" id="answerPill"></p>
+        <p class="r-label">Here's the thing</p>
+        <p class="r-text" id="rText"></p>
+        <p class="r-footnote" id="rFootnote"></p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnAgain" type="button">Deal me another →</button>
+        <a class="link-out" href="PSYCHC1000-syllabus.html">← Back to the syllabus</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<p class="sr-only" id="liveRegion" role="status" aria-live="polite"></p>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   DATA
+   Two decks, drawn from Dr. Avilla's own course documents:
+     TRUE_DECK  — "80 Psychology Facts That Surprise Most People"
+     FALSE_DECK — "Psychology Myths: Instructor Answer Key"
+   Every item is { t: topic, s: statement, e: explanation }.
+   To add or edit a statement, just edit the deck it belongs in —
+   nothing else in the page needs to change.
+   ═══════════════════════════════════════════════════════════ */
+const TRUE_DECK = [
+  { t: "Brain & body",
+    s: "Each of your eyes has a spot where no light can be detected at all, and you have never noticed the hole because your brain invents whatever it thinks belongs there.",
+    e: "The gap sits where the nerve exits the back of the eyeball, so nothing from that patch of the world ever reaches you. The brain fills it in so seamlessly that almost nobody discovers the hole on their own." },
+  { t: "Brain & body",
+    s: "You only see sharp, full-color detail in an area about the size of your thumbnail held at arm's length, and everything outside it is blurry and drained of color.",
+    e: "Your brain moves your eyes constantly and stitches the samples together into an illusion of a rich, detailed world. The vivid scene you think you are looking at is mostly a reconstruction." },
+  { t: "Brain & body",
+    s: "Your brain shuts vision off every time your eyes move, which is why you can never catch your own eyes moving in a mirror.",
+    e: "Look at your left eye in a mirror, then your right. You will never once see the movement, even though anyone standing next to you can watch it happen. The brain discards the blur of the jump and closes the gap behind it." },
+  { t: "Brain & body",
+    s: "A person can be made to feel that a rubber hand is their own body part in about a minute, using nothing but a paintbrush.",
+    e: "Hide someone's real hand, place a fake one in front of them, and stroke both at the same time. Within about a minute most people flinch when the fake hand is threatened. Which parts of the world count as your body turns out to be a running guess rather than a fixed fact." },
+  { t: "Brain & body",
+    s: "Some people who are completely blind can still avoid obstacles in a hallway while sincerely insisting they cannot see a thing.",
+    e: "When blindness comes from damage to the brain rather than the eyes, people can sometimes navigate around objects or guess an object's location at far better than chance. Seeing and knowing that you see turn out to be separable." },
+  { t: "Memory",
+    s: "Every time you pull up a memory you rebuild it, and the rebuilt version quietly absorbs details you only heard later.",
+    e: "Remembering is not replaying a recording. The rebuild takes in things you imagined, were told afterward, or saw in a photograph, and the stored version genuinely changes. This is why witnesses who compare notes end up with accounts that are more similar to each other and less accurate." },
+  { t: "Memory",
+    s: "After a few suggestive conversations, roughly a quarter of research participants will describe a childhood event that never happened to them.",
+    e: "Being lost in a shopping mall, spilling punch at a wedding — participants not only accept the planted event but often add vivid details of their own. From the inside it does not feel any different from a real memory." },
+  { t: "Memory",
+    s: "The memories you feel most certain about are not the most accurate ones, which is why a witness who is sure is not necessarily a witness who is right.",
+    e: "People asked to recall the morning of September 11 gave accounts that changed substantially over the following years, while their confidence in those accounts stayed nearly perfect the whole time. Confidence and accuracy are separate things." },
+  { t: "Memory",
+    s: "Almost nobody has genuine memories from before about age three, even though toddlers clearly form and use memories at the time.",
+    e: "Those early memories become unreachable later. Whatever you think you remember from age two is probably assembled from family stories and photographs, which is its own small demonstration of how reconstruction works." },
+  { t: "Memory",
+    s: "Mistaken eyewitnesses are the single largest contributing factor in wrongful convictions later overturned by DNA evidence, which makes a confident witness both the most persuasive thing a jury can see and one of the least reliable.",
+    e: "The problem is not that witnesses lie. It is that memory does not work the way courtrooms assume it does, so a witness can be honest, certain, and wrong all at once." },
+  { t: "Memory",
+    s: "Studying and then sleeping leaves you remembering more than studying and staying awake for the same number of hours.",
+    e: "Sleep is when the brain files what you learned that day. The all-nighter costs you the very thing you stayed up for." },
+  { t: "Memory",
+    s: "During an alcohol blackout the brain stops writing new memories at all, which is why no amount of reminding brings the night back.",
+    e: "A blackout is not forgetting. Nothing was ever stored, so there is nothing to retrieve — the difference between a file you cannot find and a file that was never written." },
+  { t: "Thinking & judgment",
+    s: "A number that everyone can see is absurd will still drag people's estimates toward it, and knowing the number is meaningless does not protect you from the pull.",
+    e: "People asked whether Gandhi died before or after age 140 guess a much older age of death than people asked whether he died before or after age 9. Everyone knows both anchors are ridiculous. It works anyway." },
+  { t: "Thinking & judgment",
+    s: "Losing twenty dollars stings about twice as much as finding twenty dollars feels good, which is a large part of why people hold on to things that are not working out.",
+    e: "Losses register roughly twice as strongly as gains of the same size. The pattern shows up in investments, in jobs, and in relationships that both people have already decided are over." },
+  { t: "Thinking & judgment",
+    s: "Doctors choose differently between two identical surgeries depending on which way the odds are worded, even though both descriptions carry exactly the same information.",
+    e: "A surgery described as having a 90 percent survival rate is chosen far more often than the identical surgery described as having a 10 percent death rate. The wording moves the decision even for people who make these decisions professionally." },
+  { t: "Thinking & judgment",
+    s: "People sit through a movie they are not enjoying largely because they already paid for the ticket, even though the money is gone either way.",
+    e: "A bad movie feels much harder to walk out of when you bought the ticket than when someone gave it to you. The money already spent should be irrelevant to the decision, and it almost never is." },
+  { t: "Thinking & judgment",
+    s: "Shoppers will confidently explain a choice using a reason that had nothing to do with why they chose it.",
+    e: "In one study shoppers overwhelmingly picked the item on the right side of a display, then explained the choice by describing its superior quality. Every item was identical. The explanation gets generated after the fact, and it feels exactly like knowing why." },
+  { t: "Thinking & judgment",
+    s: "More than 90 percent of drivers rate themselves as better than average, and the same pattern shows up for honesty, intelligence, and getting along with others.",
+    e: "That is mathematically impossible, and yet almost everyone in the room is above average by their own account." },
+  { t: "Thinking & judgment",
+    s: "People are confident they understand how a zipper works right up until the moment they are asked to explain it.",
+    e: "Ask people to rate how well they understand a zipper, a toilet, or a bicycle, then ask them to explain the mechanism step by step. Their confidence collapses partway through. We routinely mistake being familiar with a thing for understanding it." },
+  { t: "Thinking & judgment",
+    s: "Your mind is somewhere other than what you are doing for about half of your waking life, and people report being less happy while it wanders.",
+    e: "The dip holds even when the wandering thoughts are pleasant ones. Where your attention is turns out to matter for your mood about as much as what you are actually doing." },
+  { t: "Learning & studying",
+    s: "Students learn just as much whether or not the teaching matches their preferred learning style, a result that has held up across dozens of experiments.",
+    e: "The visual, auditory, and hands-on framework is one of the most popular beliefs in education and one of the least supported. People do have preferences. Those preferences just do not predict what works for them." },
+  { t: "Learning & studying",
+    s: "Highlighting and rereading are among the least effective study methods ever tested, and they are also the two most popular.",
+    e: "They produce a strong feeling of familiarity that students mistake for knowing the material, which is why students so often walk out of an exam surprised by how it went." },
+  { t: "Learning & studying",
+    s: "Closing the book and quizzing yourself builds far more durable memory than reviewing the answer again, even though it feels worse while you are doing it.",
+    e: "Retrieval is not just a way of checking what you know. It is what builds the memory, and it is not close. The catch is that the method that works feels less productive than the one that does not." },
+  { t: "Learning & studying",
+    s: "The same total hours of study spread across several days produce dramatically more retention than those hours crammed into one.",
+    e: "Nothing changes except the spacing. Same material, same person, same number of hours, and a large difference in what survives to the exam." },
+  { t: "Learning & studying",
+    s: "If studying feels easy, you are probably not learning much, because the material that flows smoothly during review is often the material that vanishes on the exam.",
+    e: "Effortful, slightly frustrating practice is what sticks, which makes how it feels a poor guide to how it is going." },
+  { t: "Learning & studying",
+    s: "Mixing up problem types while practicing works better than doing twenty of the same kind in a row, even though students rate the mixed practice as less effective.",
+    e: "They enjoy it less and consistently learn more from it. Doing the same type over and over feels like mastery because the next problem is always the same problem." },
+  { t: "Development & aging",
+    s: "Newborns already recognize their mother's voice and the rhythm of the language they heard in the womb, and will work to hear a story that was read aloud before they were born.",
+    e: "Babies whose mothers read the same story during the final weeks of pregnancy will suck harder on a pacifier to hear that story rather than a new one. Learning starts before the birthday does." },
+  { t: "Development & aging",
+    s: "A six-month-old can hear the difference between speech sounds from every language on earth, and has lost that ability by their first birthday.",
+    e: "Infants keep the distinctions their own language uses and drop the rest, which is part of why adult accents are so hard to shed. It is development working by subtraction." },
+  { t: "Development & aging",
+    s: "What a pregnant woman eats shapes what her baby later likes to eat, because flavors pass into the amniotic fluid and later into breast milk.",
+    e: "Infants whose mothers drank carrot juice during pregnancy later preferred carrot-flavored cereal." },
+  { t: "Development & aging",
+    s: "Three-year-olds assume that everyone else already knows whatever they know, and will not grasp that another person can hold a false belief until around age four or five.",
+    e: "Show a child where a toy is hidden and ask where someone who was out of the room will look for it, and the three-year-old points to the real location." },
+  { t: "Development & aging",
+    s: "Offered a soft cloth mother that gave no food and a wire mother that dispensed milk, infant monkeys clung to the cloth one.",
+    e: "They visited the wire mother only to eat, then went straight back to the cloth. Affection turned out not to be a byproduct of feeding, which overturned the prevailing view of why infants bond at all." },
+  { t: "Development & aging",
+    s: "How much adults talk with a toddler predicts that child's vocabulary and later school performance, and what counts is conversation directed at the child rather than words overheard.",
+    e: "Television and nearby adult conversation do not substitute for the back-and-forth. Being talked with, rather than talked near." },
+  { t: "Personality",
+    s: "Oldest, middle, and youngest children are statistically indistinguishable from one another on every major personality trait, in studies of hundreds of thousands of people.",
+    e: "There is no reliable difference in how outgoing, responsible, or emotionally steady they turn out to be. The pattern feels true because families narrate themselves that way and then read each other's behavior to fit." },
+  { t: "Development & aging",
+    s: "Teenagers take about twice as many risks when their friends are watching, an effect that shows up in driving simulators and does not appear in adults at all.",
+    e: "Adolescents on their own drive about as cautiously as adults. Add two peers in the room and the risk-taking doubles. Who is present changes the behavior more than what the teenager knows about the risk." },
+  { t: "Development & aging",
+    s: "Puberty shifts the internal body clock genuinely later, so a teenager told to fall asleep at 10 p.m. is being asked to sleep at what their body reads as late afternoon.",
+    e: "Adolescents sleeping in are not being lazy. Later school start times measurably improve their grades, their mood, and their crash rates." },
+  { t: "Development & aging",
+    s: "The brain keeps rewiring into the mid-twenties, and the regions handling planning and impulse control are the last to finish.",
+    e: "The parts that weigh consequences and hold back a response come fully online well after the rest, which puts \"the brain is finished at eighteen\" off by most of a decade." },
+  { t: "Development & aging",
+    s: "Different mental abilities peak at wildly different ages, running from the late teens for raw processing speed to the seventies for vocabulary.",
+    e: "Short-term memory peaks around 25, and the ability to read emotion in faces in the 40s and 50s. There is no single age at which you are at your best." },
+  { t: "Development & aging",
+    s: "Average happiness bottoms out somewhere around the late 40s and climbs again afterward, with people in their 70s often reporting more contentment than people in their 20s.",
+    e: "The same curve shows up across dozens of countries. The midlife dip is real, and so is the recovery on the other side." },
+  { t: "Development & aging",
+    s: "As people get older they pay attention to and remember the positive more than the negative, a shift that appears to follow from sensing that time is limited.",
+    e: "It does not come from any decline in memory. Older adults are not remembering worse. They are remembering differently." },
+  { t: "Personality",
+    s: "People generally become more responsible, more even-tempered, and somewhat kinder from their twenties through midlife, and traits measured in childhood predict adult traits only weakly.",
+    e: "Personality keeps changing across the whole lifespan, and in fairly predictable directions. \"People never change\" turns out to be false in a measurable way." },
+  { t: "Personality",
+    s: "Roughly 40 to 50 percent of the differences between people's personalities trace to genetics, a figure that comes largely from twins raised in separate homes.",
+    e: "Identical twins raised apart end up strikingly similar, and adopted siblings raised in the same home end up barely more alike than strangers. Note the careful wording: this is about the differences between people, not about how much of any one person is genetic." },
+  { t: "Personality",
+    s: "Hand an entire class the identical personality profile and each student will rate it as an unusually accurate description of themselves.",
+    e: "Average ratings land above 4 out of 5 for a horoscope-style profile handed to everyone in the room. Vague descriptions feel personal because the reader quietly supplies the specifics." },
+  { t: "Personality",
+    s: "Personality quizzes that sort you into a type give about half of people a different type when they retake the quiz a few weeks later.",
+    e: "The categories cut continuous traits down the middle, which is exactly where most people sit. A small wobble on the day moves you across the line and into a different type." },
+  { t: "Personality",
+    s: "Being organized and dependable predicts how long you will live, by about as much as some well-known medical risk factors.",
+    e: "Reliable people take fewer risks, follow through on treatment, and build steadier lives around themselves. A personality trait ends up doing the work of a health behavior." },
+  { t: "Personality",
+    s: "Self-control measured in early childhood predicts adult health, income, and criminal record decades later, in a study that followed a thousand people from birth to age 32.",
+    e: "The measure taken in childhood was still doing predictive work at the far end of it." },
+  { t: "People & society",
+    s: "About a third of the time, people will give an obviously wrong answer to an easy question because everyone else in the room gave it first.",
+    e: "Asked which of three lines matches a target, people working alone get it right nearly every time. Surround one person with confederates who confidently give the same wrong answer and roughly a third of responses go along with the group." },
+  { t: "People & society",
+    s: "Roughly two-thirds of ordinary people kept delivering what they believed were increasingly painful electric shocks to a stranger, because a researcher told them to continue.",
+    e: "No threats, no punishment, and nothing personal at stake. A calm man in a lab coat saying that the experiment required them to continue was enough for most participants." },
+  { t: "People & society",
+    s: "People are about twice as willing to help a stranger as we expect them to be, which makes asking for help far less risky than it feels.",
+    e: "Participants asked to guess how many strangers would lend a phone or fill out a questionnaire underestimated by roughly half." },
+  { t: "People & society",
+    s: "After you talk with someone new, they almost certainly liked you more than you think they did, and the gap does not close for months afterward.",
+    e: "People consistently underestimate how much a conversation partner enjoyed the exchange. The conversation went better than you think it did." },
+  { t: "People & society",
+    s: "Commuters told to strike up a conversation with a stranger reported a more pleasant trip than those told to sit in silence.",
+    e: "Almost everyone predicts the opposite before it happens, which is a good part of why the train stays quiet." },
+  { t: "People & society",
+    s: "Giving money away makes people happier than spending it on themselves, even in small amounts and even when they were assigned at random to do it.",
+    e: "The random assignment is what matters, because it rules out the possibility that happier people simply give more in the first place. The result holds across countries at very different income levels." },
+  { t: "People & society",
+    s: "Happiness keeps climbing with income well past the point where it was supposed to level off, and the famous plateau turned out to be an artifact of how the surveys were scored.",
+    e: "The widely repeated claim that well-being stops improving above a certain salary does not survive a closer look at the data. For most people the line keeps going up." },
+  { t: "People & society",
+    s: "Good-looking people are assumed to be smarter, kinder, and more competent, and the assumption shows up in hiring decisions and courtroom sentences.",
+    e: "It also shows up in how much teachers expect from a child. None of it is something the people making the judgments are aware of doing." },
+  { t: "People & society",
+    s: "Identical resumes get different callback rates depending on nothing but the name at the top, in field experiments that mailed out thousands of applications.",
+    e: "Callback rates differed sharply by the name's apparent race, from employers who would have described themselves as fair." },
+  { t: "Love & relationships",
+    s: "People are most strongly drawn to partners who resemble them in attitudes, values, and background, and similarity predicts satisfaction as well as initial attraction.",
+    e: "What matters most is not actually being alike, but believing that you are." },
+  { t: "Love & relationships",
+    s: "Seating charts and dorm assignments shape who people fall in love with more than anyone likes to admit.",
+    e: "Sheer proximity and repeated exposure do a great deal of the work, partly because we come to like almost anything we encounter often enough." },
+  { t: "Love & relationships",
+    s: "People who meet someone right after exercising rate that person as more attractive than people who meet the same person in calm conditions.",
+    e: "The same thing happens when the meeting takes place on a frightening bridge. The body's arousal gets attributed to the person standing there rather than to the stairs or the drop." },
+  { t: "Love & relationships",
+    s: "Two strangers who work through a set of increasingly personal questions end up feeling closer than strangers who make small talk.",
+    e: "Thirty-six questions, ending with four minutes of silent eye contact, reliably manufacture closeness. At least one pair from the original research later married." },
+  { t: "Love & relationships",
+    s: "Couples assigned to do something new and slightly challenging together end up more satisfied than couples assigned to do something pleasant and familiar.",
+    e: "The activity everyone already enjoys is the safer choice and the weaker one. The novelty appears to get read as something the relationship is providing." },
+  { t: "Love & relationships",
+    s: "How your partner responds to your good news predicts the health of the relationship better than how they respond to your bad news.",
+    e: "Enthusiastic, curious responses to a promotion or an achievement forecast satisfaction and stability. A distracted \"that's nice\" does real damage." },
+  { t: "Love & relationships",
+    s: "Holding a partner's hand measurably reduces how painful people rate an electric shock, and the effect is strongest in the happiest marriages.",
+    e: "It also lowers how much the threat registers in the brain. A stranger's hand does not work nearly as well." },
+  { t: "Love & relationships",
+    s: "Couples who express care in many different ways do better than couples who match one preferred love language.",
+    e: "There is no good evidence that people have one primary channel for receiving affection, or that matching a partner's stated language predicts a better relationship. The popular advice points close to the opposite of the finding." },
+  { t: "Love & relationships",
+    s: "Marital satisfaction usually drops after the first child arrives, most sharply for mothers of infants, even as parents report more meaning in their lives.",
+    e: "Meaning goes up while moment-to-moment enjoyment goes down, which is why the finding surprises people who ask parents whether it was worth it." },
+  { t: "Love & relationships",
+    s: "Hitting a punching bag or ranting about the person who wronged you reliably makes people more aggressive afterward, not less.",
+    e: "Venting does not get anger out of your system. Rehearsing the grievance keeps the arousal going and practices the response. It is one of psychology's most durable wrong ideas." },
+  { t: "Sleep & stress",
+    s: "After two weeks of six hours of sleep a night, people perform as badly as if they had pulled an all-nighter, and rate themselves as only slightly tired.",
+    e: "You lose the ability to notice how impaired you are at roughly the same rate you lose the ability to think, which is what makes chronic short sleep so hard to catch in yourself." },
+  { t: "Sleep & stress",
+    s: "A single bad night of sleep raises next-day anxiety by around 30 percent, which means some of what feels like a personality trait is a sleep debt.",
+    e: "The effect is large enough to change how a person would describe themselves, not just how they feel that afternoon." },
+  { t: "Brain & body",
+    s: "A year of regular walking physically enlarged a memory structure in the brains of older adults, a region that normally shrinks with age.",
+    e: "In the walking group it grew instead, and memory performance improved along with it." },
+  { t: "Brain & body",
+    s: "Learning to juggle visibly changes the structure of an adult brain within a few months, and the changes fade when people stop practicing.",
+    e: "The adult brain remodels itself around whatever you repeatedly do, and un-remodels when you stop doing it." },
+  { t: "Sleep & stress",
+    s: "Writing about a stressful experience for fifteen minutes on a few separate days improves physical health months later, including fewer visits to the doctor.",
+    e: "Nobody has to read what you wrote, which rules out most of the obvious social explanations." },
+  { t: "Mental health",
+    s: "The five stages of grief came from interviews with people who were dying, not people who were grieving, and were never tested as a sequence.",
+    e: "Research following bereaved people over time finds no orderly progression through them. Acceptance is usually the most common response from the very beginning." },
+  { t: "Mental health",
+    s: "After terrible events, the most common outcome by a wide margin is real distress that gradually resolves on its own.",
+    e: "Across bereavement, disasters, and combat, lasting breakdown is the minority path and delayed collapse is rarer still. Resilience is the ordinary human response, not an unusual strength." },
+  { t: "Mental health",
+    s: "Talk therapy works about as well as medication for mild to moderate depression, and people who finish a course of therapy relapse less often afterward.",
+    e: "The comparison there is against people who stop taking their medication, which is the more common real-world path." },
+  { t: "Mental health",
+    s: "A pill can still work when you are told outright, before you take it, that it is a sugar pill with no active ingredient in it.",
+    e: "Patients given placebos and explicitly informed of exactly that have shown real symptom relief for chronic pain, irritable bowel syndrome, and fatigue. Deception turns out not to be the necessary ingredient." },
+  { t: "Mental health",
+    s: "Asking someone directly whether they are thinking about suicide tends to reduce their distress, rather than planting the idea in someone who was not already considering it.",
+    e: "Reviews of studies with at-risk people find no increase in suicidal thinking from being asked, and frequently a reduction. The question people are most afraid to ask is the safe one." },
+  { t: "Mental health",
+    s: "Half of all mental health conditions a person will ever have begin by age 14, and three quarters by age 24.",
+    e: "Which is why so much of the burden falls on exactly the age group sitting in a college classroom." },
+  { t: "Work & motivation",
+    s: "Telling someone to do their best produces worse performance than giving them a specific, difficult target, across hundreds of studies and many kinds of tasks.",
+    e: "This is one of the most consistently replicated findings in the study of work. \"Do your best\" sets no bar, so anything at all counts as clearing it." },
+  { t: "Work & motivation",
+    s: "More than a third of attempts to give someone feedback make their performance worse, particularly when the feedback is aimed at the person rather than at the task.",
+    e: "That kind of feedback tends to redirect attention toward defending the self and away from the work itself." },
+  { t: "Work & motivation",
+    s: "Paying people to do something they already enjoy makes them do less of it once the payment stops, even though the activity itself has not changed.",
+    e: "Rewards work well for tasks nobody wants to do, and can quietly undermine the ones people were doing for their own reasons." },
+  { t: "Work & motivation",
+    s: "The casual, unstructured job interview is a poor predictor of who will actually do the job well, and managers trust it more than the method that works better.",
+    e: "Asking every candidate the same planned questions and scoring the answers against set criteria predicts performance substantially better." },
+  { t: "Work & motivation",
+    s: "When two companies tore down their office walls, face-to-face conversation dropped by roughly 70 percent while electronic messaging rose to fill the gap.",
+    e: "People responded to the loss of privacy by putting on headphones and moving the conversation somewhere it could not be overheard." }
+];
+
+const FALSE_DECK = [
+  { t: "Brain & body",
+    s: "Most people use only about 10 percent of their brain at any given time, which is why techniques that tap into the unused portion can produce sudden jumps in memory and concentration.",
+    e: "Brain imaging shows activity distributed throughout the entire organ, and damage to any region produces deficits. There is no dormant reserve waiting to be unlocked. The myth may have grown out of early estimates that only a small fraction of brain cells are neurons, the rest being support cells." },
+  { t: "Brain & body",
+    s: "People are either left-brained or right-brained, with the logical, analytical types on one side and the creative, intuitive types on the other. Knowing which you are helps explain why some subjects come easily and others never click.",
+    e: "Specific functions such as language production do favor one hemisphere in most people. But brain imaging of over a thousand individuals found no evidence that anyone has a globally stronger left or right side, and no such pattern predicts personality or aptitude." },
+  { t: "Brain & body",
+    s: "Underneath the modern human brain sits a much older reptilian brain inherited from our distant ancestors, which handles aggression, territory, and survival impulses. When people say something is a gut reaction, that older layer is what is taking over.",
+    e: "Vertebrate brains evolved by elaborating structures that already existed, not by stacking new layers on preserved old ones. Reptiles and birds have their own versions of the structures once labeled uniquely mammalian. The three-layer model was popularized in the 1960s and abandoned by comparative neuroanatomists decades ago." },
+  { t: "Learning & studying",
+    s: "Playing classical music to infants raises their intelligence, an effect strong enough that some states have distributed classical CDs to new parents.",
+    e: "The original finding was a brief improvement on one spatial reasoning task in college students, and it faded within about fifteen minutes. It was driven by mood and alertness, works equally well with anything a listener enjoys, and never involved infants at all." },
+  { t: "Learning & studying",
+    s: "Brain training apps produce measurable gains in general intelligence when used consistently for several weeks, with the largest benefits for memory and attention in older adults.",
+    e: "People reliably improve at the training games themselves. Evidence that those gains transfer to everyday thinking, work performance, or dementia risk is very weak, and a consensus statement signed by dozens of researchers in the field said as much." },
+  { t: "Thinking & judgment",
+    s: "Subliminal messages flashed too briefly to be consciously seen can influence what people buy, a finding first demonstrated when a movie theater spliced single frames reading \"Drink Cola\" into a film and concession sales rose.",
+    e: "The theater demonstration was invented by a marketing consultant who later admitted he fabricated the results. Briefly presented words can nudge behavior slightly in tightly controlled lab conditions, but nothing resembling the commercial claim has ever been shown, and subliminal self-help products do nothing beyond what buyers expect." },
+  { t: "Learning & studying",
+    s: "You can learn new material while asleep by playing recordings overnight, which is why language programs sell sleep tracks as a way to absorb vocabulary without effort.",
+    e: "Sleeping brains can form simple associations, such as linking a tone to an odor. No study has shown people acquiring vocabulary or facts from audio played while unconscious. What sleep does for learning is consolidate material you studied while awake." },
+  { t: "Memory",
+    s: "Memory works like a recording. The details are all in there somewhere, and the challenge is retrieving them rather than preserving them.",
+    e: "Memory is rebuilt each time it is used, and the rebuild absorbs later information, suggestion, and imagination. The stored version genuinely changes. This is why witnesses who discuss an event with each other end up with more similar and less accurate accounts." },
+  { t: "Memory",
+    s: "Hypnosis allows people to retrieve memories in accurate detail that they cannot reach in an ordinary waking state, which is why it has been used to help witnesses recall details of a crime.",
+    e: "Hypnosis reliably increases how confident people feel about what they recall without increasing how accurate it is, and it makes people more receptive to suggestion. Many courts restrict or exclude hypnotically refreshed testimony for exactly this reason." },
+  { t: "Memory",
+    s: "Traumatic experiences are often pushed out of awareness entirely and can resurface years later in therapy, which explains cases of adults recovering childhood memories they had no access to before.",
+    e: "The characteristic problem with traumatic memory is intrusion, not absence. Survivors typically cannot stop remembering. The techniques used to recover supposedly buried memories are the same suggestive methods shown to create detailed memories of events that never happened." },
+  { t: "Memory",
+    s: "A small number of people have photographic memories and can hold a page or a scene in mind with perfect detail.",
+    e: "Despite a century of searching, no verified case has been documented in an adult. Memory champions who recite thousands of digits use trained strategies for converting information into vivid images placed in familiar locations, and their memory for everyday material is ordinary." },
+  { t: "People & society",
+    s: "Polygraph tests detect deception with better than 90 percent accuracy, which is why they remain standard in security screening.",
+    e: "The polygraph measures arousal, not lying. A National Research Council review concluded that accuracy in realistic conditions falls well short of that figure and that the test is particularly poor for screening, where innocent nervous people are routinely flagged. Polygraph results are inadmissible in most courts." },
+  { t: "Memory",
+    s: "Amnesia typically means losing your identity and your past while retaining the ability to function normally in the present.",
+    e: "The common pattern is the reverse. People keep their identity and past and lose the ability to form new memories going forward. The version in films is rare enough that individual cases become famous in the research literature." },
+  { t: "Development & aging",
+    s: "Memory begins a steady decline after about age 30, which is why learning new things becomes progressively harder throughout adulthood.",
+    e: "Different abilities follow different curves. Raw processing speed peaks around 18 or 19 and short-term memory around 25, but the ability to read emotion in faces peaks in the 40s and 50s, and vocabulary and accumulated knowledge often do not peak until the late 60s or 70s." },
+  { t: "Learning & studying",
+    s: "Students learn best when instruction matches their learning style, whether they are visual, auditory, or hands-on learners. Teaching a visual learner through lecture alone wastes much of the material.",
+    e: "People do have preferences. Dozens of experiments have matched teaching method to those preferences and found no learning benefit. The proper test requires crossing style with instruction and showing each group does best in its matched condition, and studies that run that test come back empty. It may be the most widely held belief in education with the least support." },
+  { t: "Learning & studying",
+    s: "Highlighting key passages and rereading the chapter are effective study strategies because they focus attention on the most important material and strengthen it through repeated exposure.",
+    e: "Both rank near the bottom of every systematic comparison of study techniques, and they are the two most commonly used. They generate a feeling of familiarity that students mistake for knowing the material, which is why students often walk out of an exam surprised." },
+  { t: "Learning & studying",
+    s: "It takes about 10,000 hours of practice to achieve expertise in any field, a threshold that shows up consistently across musicians, athletes, and chess masters.",
+    e: "The figure came from averaging the practice hours of one small group of violinists, and it was the average rather than a threshold. It was turned into a rule by a popular book, not by the researchers. Practice hours explain a modest share of the differences between performers, and the amount required varies enormously across domains and individuals." },
+  { t: "Learning & studying",
+    s: "There are multiple independent intelligences, including musical, bodily, interpersonal, and naturalistic, so a student who tests poorly on academic measures may be gifted in a different one.",
+    e: "The framework is widely taught in education and has never accumulated psychometric support. Measured mental abilities correlate positively with one another rather than operating independently. People obviously differ in talents, but relabeling talents as separate intelligences has not produced anything that predicts outcomes." },
+  { t: "Work & motivation",
+    s: "Emotional intelligence predicts career success better than IQ does, accounting for the large majority of what separates top performers from average ones.",
+    e: "The claim originated in a popular book rather than a research finding, and the specific percentages attached to it have no source. Emotional skills do contribute something beyond general mental ability, particularly in jobs heavy on interpersonal demands, but the contribution is modest." },
+  { t: "Thinking & judgment",
+    s: "Young people who grew up with technology are genuinely good at multitasking in a way older generations are not, because their brains developed under constant parallel input.",
+    e: "The people who multitask the most perform worst at filtering distraction and switching between tasks. Practice at doing several things at once does not build skill at it, and attention does not divide between demanding tasks. It alternates, and the alternating costs time and accuracy." },
+  { t: "Learning & studying",
+    s: "With training, people can read several times faster with no loss of comprehension. The trick is eliminating subvocalization and taking in whole lines at a glance.",
+    e: "Reading speed and comprehension trade off against each other, and the eye can only take in a limited span of text per fixation. What speed reading courses mostly teach is skimming, which is a genuinely useful skill but is not the same as reading." },
+  { t: "Learning & studying",
+    s: "Boys have a natural advantage in mathematics that emerges around adolescence and reflects underlying differences in how the sexes process spatial information.",
+    e: "Average performance differences are small, have narrowed substantially over recent decades, and vary widely between countries, all of which is hard to reconcile with a fixed biological cause. In some countries girls outperform boys. Where gaps persist, they track differences in expectations and participation rather than capacity." },
+  { t: "Personality",
+    s: "Birth order shapes personality in predictable ways. Firstborns tend to be responsible and achievement-oriented, middle children become peacemakers, and youngest children grow up more rebellious and attention-seeking.",
+    e: "Studies of hundreds of thousands of people find no reliable differences between oldest, middle, and youngest on any major personality dimension. Firstborns average one to two IQ points higher, a gap too small for anyone to notice. The pattern feels true because families narrate themselves that way and then interpret behavior to fit." },
+  { t: "Personality",
+    s: "The core of an adult personality is set by around age five, which is why early childhood experiences carry so much weight in explaining who someone becomes.",
+    e: "Personality keeps changing across the whole lifespan and in fairly predictable directions. People generally become more responsible, more even-tempered, and somewhat more agreeable from their twenties through midlife. Traits measured in childhood predict adult traits only weakly." },
+  { t: "Development & aging",
+    s: "Sugar makes children hyperactive, as any parent who has run a birthday party can confirm.",
+    e: "Double-blind trials find no behavioral effect of sugar on children, including children whose parents describe them as sugar-sensitive. In one study, mothers falsely told their sons had just consumed sugar rated them as noticeably more hyperactive. What parents are seeing is the party, not the cake." },
+  { t: "Development & aging",
+    s: "Educational videos designed for infants build early vocabulary by pairing clear speech with engaging visuals during the period when language acquisition is most rapid.",
+    e: "Time spent with these videos is associated with knowing fewer words, not more. Infants under about two learn language from responsive back-and-forth interaction with a person, and they do not transfer what they see on a screen to the real world. The most likely mechanism is displaced conversation time." },
+  { t: "Development & aging",
+    s: "Raising a child with two languages at once causes confusion and delays speech, so experts generally recommend establishing one language firmly before introducing a second.",
+    e: "Bilingual children may know somewhat fewer words in each language considered separately while knowing as many or more across both. They reach speech milestones on the normal schedule, and mixing languages within a sentence is a normal feature of bilingual speech rather than a sign of confusion." },
+  { t: "Development & aging",
+    s: "Adolescence is inevitably a period of emotional turmoil and conflict with parents. The hormonal upheaval of puberty makes some degree of rebellion and family strain unavoidable.",
+    e: "Most adolescents report warm relationships with their parents and pass through the period without serious disruption. Conflict does rise somewhat in early adolescence, typically over ordinary matters like chores and curfew. Severe turmoil is a minority experience and usually signals something beyond normal development, which is why treating it as a phase can delay help." },
+  { t: "Development & aging",
+    s: "Praising children for being smart builds the self-esteem they need to take on challenges and produces better performance than praising the work itself.",
+    e: "Praising ability tends to make children choose easier tasks afterward and give up faster when they hit failure, because difficulty now threatens the label they were given. Praising effort and strategy produces the opposite pattern." },
+  { t: "Development & aging",
+    s: "Only children grow up more selfish and less socially skilled because they never have to share attention, negotiate with a sibling, or work out a conflict at home.",
+    e: "Only children score equal to or slightly higher than children with siblings on achievement, adjustment, and social competence. The stereotype traces largely to a nineteenth century researcher who declared being an only child a disease in itself, based on no systematic evidence." },
+  { t: "Love & relationships",
+    s: "Everyone has a primary love language, and relationships improve substantially when partners learn to express affection in the language their partner receives best rather than the one they naturally speak.",
+    e: "There is no evidence that people have one primary channel for receiving affection, that the five categories capture the range of how people express care, or that matching a partner’s stated language predicts a better relationship. Couples who express care in many ways tend to do best, which is close to the opposite of the advice." },
+  { t: "Love & relationships",
+    s: "Opposites attract. People are drawn to partners whose temperament balances their own, which is why a reserved person so often ends up with someone outgoing.",
+    e: "People are consistently most attracted to others who resemble them in attitudes, values, and background, and similarity predicts satisfaction as well as initial attraction. What matters most is not actually being alike but believing that you are. Complementary differences appear in stories about couples far more often than in data about them." },
+  { t: "Love & relationships",
+    s: "About half of all marriages end in divorce. The rate climbed through the twentieth century and has held near 50 percent ever since.",
+    e: "The figure came from dividing the number of divorces in a given year by the number of marriages in that same year, which compares two different populations. Divorce rates peaked around 1980 and have been falling since, and for recent college-educated couples the lifetime risk is well under half." },
+  { t: "Love & relationships",
+    s: "Men think about sex roughly every seven seconds, which works out to several thousand times a day.",
+    e: "When researchers have asked people to log the thought as it occurs, the median for college-age men was around nineteen times a day, roughly the same as how often they thought about food. The range between individuals was enormous, and no study has ever produced anything close to the seven-second figure." },
+  { t: "Love & relationships",
+    s: "Couples who live together before marriage have a better shot at staying married because they have already tested their compatibility under everyday conditions.",
+    e: "For decades the data pointed the other way, and the association has largely disappeared in recent cohorts as cohabitation became common. Living together is neither the protection nor the hazard it has been claimed to be. What does predict outcomes is whether partners decided to move in together deliberately or drifted into it." },
+  { t: "Love & relationships",
+    s: "The healthiest couples are the ones who rarely fight. Frequent arguing is the clearest warning sign that a relationship is in trouble.",
+    e: "How couples argue matters far more than how often. Withdrawing from conflict and refusing to engage predicts worse outcomes than arguing does, and contempt during disagreement is the more meaningful danger sign. Some stable, satisfied couples argue a great deal." },
+  { t: "Love & relationships",
+    s: "Long-distance relationships rarely survive. The lack of daily contact erodes intimacy no matter how committed the partners are.",
+    e: "Long-distance couples report comparable satisfaction, commitment, and stability to couples in the same city, and in some studies more idealization of the partner and more self-disclosure. The genuinely difficult period is often reunion, when partners have to reconcile the idealized version with the daily one." },
+  { t: "Love & relationships",
+    s: "Having a child brings couples closer together and raises marital satisfaction by giving partners a shared project and a deeper bond.",
+    e: "Marital satisfaction typically declines after a first child arrives, most sharply for mothers of infants, and the decline is steeper than the gradual drop couples show anyway. Parents report more meaning in their lives alongside less moment-to-moment enjoyment, which is why the finding surprises people who ask parents whether it was worth it." },
+  { t: "Love & relationships",
+    s: "Men and women communicate so differently that many relationship problems come down to a basic mismatch in how each sex uses language, with women seeking connection and men seeking solutions.",
+    e: "Measured differences in how men and women communicate are small and heavily overlapping, including for interrupting, talking time, and emotional expression. Across the large majority of psychological variables the sexes are far more similar than different. Framing an ordinary disagreement as an unbridgeable difference in kind tends to make couples less willing to work on it." },
+  { t: "Love & relationships",
+    s: "Matching algorithms can identify who you will be compatible with by comparing personality profiles and stated preferences across thousands of data points.",
+    e: "Attempts to predict attraction from what two people report about themselves, before they meet, perform at essentially chance levels. What people say they want in a partner bears little relationship to who they actually respond to in person. Algorithms are good at narrowing a pool by criteria you can specify; compatibility is not one of those criteria." },
+  { t: "Personality",
+    s: "Personality type assessments identify a stable type that predicts what kind of work someone will excel at, which is why they are so widely used in hiring and team building.",
+    e: "Roughly half of people receive a different type when they retake such an assessment a few weeks later, largely because the underlying traits are continuous and most people sit near the middle where the cut is made. Type scores predict job performance poorly, and the most widely used instrument was developed outside academic psychology and has never been validated for selection." },
+  { t: "Personality",
+    s: "Handwriting reveals personality. Slant, pressure, and letter formation are produced by the brain rather than the hand, so they expose traits people would otherwise conceal.",
+    e: "Handwriting analysis has no demonstrated validity for assessing personality. When graphologists have been tested against personality measures, their judgments do no better than chance, and no better than untrained people reading the same samples. It is still used in hiring in parts of Europe." },
+  { t: "Personality",
+    s: "Inkblot tests reveal aspects of personality that people will not report directly, because interpreting an ambiguous image forces unconscious material to the surface.",
+    e: "A small number of inkblot indices have some support, mostly relating to disordered thinking. The large majority of what is scored has never been shown to measure what it claims to, and the test has historically overpathologized normal respondents. It remains in use in custody and forensic evaluations." },
+  { t: "Personality",
+    s: "Your astrological sign is associated with measurable personality differences, an effect thought to arise from seasonal variation in conditions during gestation and early infancy.",
+    e: "Large studies find no relationship between birth sign and personality, and astrologers given birth data and personality profiles cannot match them at better than chance. Season of birth is a legitimate research question with some findings attached to it, but nothing in that work maps onto astrological categories." },
+  { t: "Personality",
+    s: "Type A people, who are competitive, impatient, and driven, are at substantially higher risk of heart attack than their more relaxed Type B counterparts.",
+    e: "The global Type A category does not reliably predict heart disease, and later large studies failed to reproduce the original result. Hostility specifically shows a modest relationship. Much of the early research promoting the broader construct was funded by the tobacco industry, which had an interest in an alternative explanation for heart disease." },
+  { t: "Personality",
+    s: "Left-handed people are more creative, a difference attributed to greater involvement of the right hemisphere in their thinking.",
+    e: "Handedness shows no reliable relationship with creative ability. The belief survives on a handful of famous left-handed artists and on the separate myth that creativity lives in the right hemisphere." },
+  { t: "Thinking & judgment",
+    s: "Willpower works like a fuel tank. Resisting one temptation depletes a limited reserve, which is why people who hold out all day give in at night.",
+    e: "Large coordinated replication attempts across many laboratories have found little or no evidence for the depletion effect, and the proposed mechanism involving blood glucose does not hold up. Whether people believe willpower is limited turns out to predict their behavior better than any physical reserve does." },
+  { t: "Mental health",
+    s: "Building self-esteem improves academic performance and reduces violence, which is why so many school programs target it directly.",
+    e: "Self-esteem correlates with success but does not produce it, and when the two are tracked over time the causal arrow runs mostly from achievement to esteem. Aggression is more often linked to high but unstable or threatened self-regard than to low self-esteem. A major review concluded that raising self-esteem directly produces almost nothing." },
+  { t: "Mental health",
+    s: "Venting anger relieves it. Hitting a pillow or talking through your frustration releases the pressure so it does not build up and come out somewhere worse.",
+    e: "Venting reliably makes people more aggressive afterward, not less, including toward people uninvolved in the original provocation. Rehearsing the grievance keeps the arousal going and practices the response. What actually reduces anger is anything that brings arousal down, such as waiting, distraction, or slow breathing." },
+  { t: "People & society",
+    s: "Only about 7 percent of communication is carried by the words themselves, with the remaining 93 percent coming from tone of voice and body language.",
+    e: "Those percentages come from two narrow studies in which people judged a speaker’s feeling from a single spoken word paired with a conflicting tone or expression. The researcher spent years objecting to the generalization. If the numbers were true you could follow a lecture in a language you do not speak." },
+  { t: "People & society",
+    s: "Trained interviewers can detect deception from body language at rates well above chance, using cues like fidgeting, self-touching, and shifts in posture.",
+    e: "Across hundreds of studies people average around 54 percent accuracy at detecting lies, and professionals whose work involves it do not perform meaningfully better than students. The behaviors popularly treated as tells show little or no relationship to actual deception. Training programs built on them mainly increase confidence." },
+  { t: "People & society",
+    s: "People who are lying tend to avoid eye contact. The discomfort of deception makes sustained gaze difficult.",
+    e: "There is no reliable relationship between gaze and honesty. If anything, people deliberately trying to deceive often hold eye contact more than usual, precisely because they know the stereotype. The belief is nearly universal across cultures, which makes it a useful demonstration of how a shared intuition can be uniformly wrong." },
+  { t: "People & society",
+    s: "Holding a confident posture for two minutes before a stressful event raises testosterone, lowers stress hormones, and improves performance. The effect is large enough to change how people come across in job interviews.",
+    e: "People do report feeling more powerful after adopting an expansive posture, and that self-report effect has held up. The hormonal changes and the behavioral and performance benefits failed to appear in larger preregistered attempts, including one with roughly five times the original sample. One of the original authors has publicly stated she no longer believes the effect is real." },
+  { t: "Mental health",
+    s: "A good cry makes you feel better by releasing built-up emotion, which is why people describe feeling lighter afterward.",
+    e: "When mood is measured before and after rather than recalled later, most crying episodes do not improve it and many are followed by feeling worse. Whether people feel better depends largely on whether someone comforted them and whether the situation resolved. The memory of feeling better afterward is partly a story people tell about the episode." },
+  { t: "Thinking & judgment",
+    s: "Vividly imagining a successful outcome improves your chances of achieving it by preparing the mind to recognize and act on opportunities.",
+    e: "Fantasizing about success on its own predicts lower effort and worse attainment, across dieting, job hunting, and academic goals. Imagining the outcome appears to give some of the satisfaction of having achieved it. What does work is pairing the desired outcome with the specific obstacles in the way and planning for them." },
+  { t: "People & society",
+    s: "First impressions are formed within seconds and are extremely difficult to change, which is why the opening moments of an interview matter more than everything that follows.",
+    e: "People do form impressions within a fraction of a second, and those snap judgments are surprisingly consistent between observers. But they update readily when contradicting information arrives, particularly information about behavior. The stickiness of first impressions is considerably overstated." },
+  { t: "Mental health",
+    s: "Grief moves through five stages: denial, anger, bargaining, depression, and acceptance. People who get stuck in one stage tend to have a harder time recovering.",
+    e: "The stages came from interviews with people who were dying, not people who were bereaved, and were never tested as a sequence. Research following grieving people over time finds no orderly progression, and acceptance is usually the most common response from the very beginning. The real harm is that mourners who do not follow the sequence conclude they are grieving wrong." },
+  { t: "Mental health",
+    s: "Most people who live through a traumatic event develop lasting psychological problems unless they receive treatment.",
+    e: "The most common outcome by a wide margin is real distress that resolves over weeks to months without formal treatment. Across bereavement, disasters, and combat, lasting disorder is the minority path and delayed onset is rarer still. Resilience is the ordinary human response, not an unusual strength." },
+  { t: "Mental health",
+    s: "Talking through a traumatic event immediately afterward helps prevent long-term problems, which is why counselors are dispatched to schools and workplaces after a disaster.",
+    e: "Single-session debriefing shows no preventive benefit for PTSD, and in several controlled trials participants did worse than people left alone. Being required to recount an event in detail before you are ready appears to interfere with natural recovery. Practical support and making help available to those who want it works better than mandatory processing." },
+  { t: "Mental health",
+    s: "Depression is caused by a chemical imbalance, specifically a shortage of serotonin, which is what antidepressants correct.",
+    e: "A comprehensive review of the evidence found no consistent support for serotonin deficiency as a cause of depression. Antidepressants help many people, but not through a mechanism anyone has established. Telling patients they have a chemical imbalance also tends to increase pessimism about recovery without reducing stigma." },
+  { t: "Mental health",
+    s: "Antidepressants begin working within a few days, which is how patients and doctors can tell early on whether a medication is the right fit.",
+    e: "Meaningful improvement typically takes several weeks, and side effects often arrive first. This mismatch is one of the main reasons people stop taking a medication that would eventually have worked, which is why the timeline gets explained at the first prescription." },
+  { t: "Mental health",
+    s: "Psychiatric emergency rooms are busier during a full moon, a pattern staff on overnight shifts report almost universally.",
+    e: "Analyses pooling dozens of studies find no lunar effect on admissions, crime, or emergency visits. A busy night under a full moon gets noticed and remembered; a busy night under a new moon is just a busy night. The belief is a clean example of how selective memory manufactures a pattern." },
+  { t: "Mental health",
+    s: "Asking someone directly whether they are thinking about suicide can plant the idea in a vulnerable person, so it is safer to approach the subject indirectly.",
+    e: "Reviews of studies with at-risk people find no increase in suicidal thinking from being asked, and frequently a reduction in distress. Asking directly is the safer choice, and hesitating on this belief is one of the more consequential ways the myth causes harm." },
+  { t: "Mental health",
+    s: "Suicides peak during the winter holidays, when isolation and family stress are at their height.",
+    e: "Rates are typically at their lowest in December and tend to peak in late spring and early summer. Media coverage repeating the holiday claim is tracked annually precisely because it is both false and persistent." },
+  { t: "Mental health",
+    s: "Schizophrenia involves a split personality, with the person alternating between distinct identities.",
+    e: "Schizophrenia involves disturbances of perception and thought, most notably hallucinations, delusions, and disorganized thinking. Alternating identities describes a different and much rarer condition. The confusion comes from the name itself, coined to mean a splitting of mental functions from one another rather than of the person into several people." },
+  { t: "Mental health",
+    s: "People with serious mental illness commit violent crime at substantially higher rates than the general population, which is why psychiatric history is a standard part of threat assessment.",
+    e: "People with mental illness are considerably more likely to be victims of violence than perpetrators of it. The overall contribution of mental illness to violent crime is small, and most of the elevated risk that does exist is accounted for by substance use, which raises risk in people without any psychiatric diagnosis too." },
+  { t: "Sleep & stress",
+    s: "Some people are naturally short sleepers who function at full capacity on four or five hours a night, a trait that tends to run in families.",
+    e: "The genuine version exists, is linked to specific rare gene variants, and accounts for well under one percent of people. Nearly everyone who believes they belong to this group is impaired and has lost the ability to detect it, since the capacity to judge your own impairment degrades along with everything else." },
+  { t: "Sleep & stress",
+    s: "You can catch up on lost sleep over the weekend and restore what you missed during the week.",
+    e: "Recovery sleep repays part of the debt. Attention, mood, and metabolic effects from a week of restriction do not fully reverse after a couple of long nights, and the shifting schedule creates its own problem by moving the body clock back and forth every week." },
+  { t: "Sleep & stress",
+    s: "An alcoholic drink before bed helps you sleep by relaxing the body and shortening the time it takes to fall asleep.",
+    e: "Alcohol does shorten the time it takes to fall asleep, and then degrades everything after that. It suppresses dreaming sleep in the first half of the night and fragments the second half as it metabolizes, which is why people wake at three in the morning and why the sleep feels unrefreshing." },
+  { t: "Sleep & stress",
+    s: "Waking a sleepwalker is dangerous and can cause severe disorientation or shock, so the safe response is to let them continue.",
+    e: "Waking a sleepwalker is harmless, though they will likely be confused and slow to orient. The real danger is what the sleepwalker might do, so guiding them back to bed is the sensible response, particularly near stairs, windows, or exterior doors." },
+  { t: "Sleep & stress",
+    s: "Dreams use a shared symbolic vocabulary. Falling signals insecurity, teeth falling out signals anxiety about appearance, and being chased signals avoidance of a problem.",
+    e: "Dream content does relate to waking concerns, and some themes recur across cultures. But no universal dictionary of symbols has ever held up under testing, and the interpretations are accepted for much the same reason horoscopes are: they are vague enough to fit, and the dreamer does the fitting." },
+  { t: "Brain & body",
+    s: "Chronic stress causes stomach ulcers by driving excess acid production in people under sustained pressure.",
+    e: "The large majority of ulcers are caused by a bacterial infection or by long-term use of anti-inflammatory drugs, and most are curable with antibiotics. The researchers who demonstrated this were dismissed for years, one of them eventually drinking a culture of the bacterium to prove the point, and they later received a Nobel Prize. Stress can worsen symptoms but does not cause the ulcer." },
+  { t: "Work & motivation",
+    s: "Pay is the strongest driver of job satisfaction, which is why compensation is the most effective lever an organization has for keeping people engaged.",
+    e: "The relationship between pay level and job satisfaction is surprisingly weak, on the order of a correlation of .15, and people at very different salary levels report similar satisfaction. Once pay is adequate and perceived as fair, the work itself, autonomy, and the immediate supervisor matter considerably more." },
+  { t: "Work & motivation",
+    s: "Groups generate more and better ideas when they brainstorm together than the same people would working separately, because each idea sparks another.",
+    e: "The same number of people working alone and pooling their results afterward reliably produce more ideas and better ones. Groups lose output to waiting your turn, to converging early on a shared direction, and to holding back in front of others. Participants nonetheless leave the group session convinced it went better, which is part of why the practice survives." },
+  { t: "Work & motivation",
+    s: "A skilled interviewer can judge from a single conversation whether a candidate will succeed in a way that structured questions and scoring rubrics miss.",
+    e: "Unstructured interviews predict job performance poorly, and interviewers grow more confident without growing more accurate. In one demonstration, students predicted a classmate’s GPA less accurately after interviewing them than before, and the interview hurt accuracy even when the interviewee had been instructed to answer at random. Asking every candidate the same planned questions and scoring against set criteria works considerably better." },
+  { t: "Work & motivation",
+    s: "Open floor plans increase collaboration by removing the physical barriers that keep colleagues from talking to one another.",
+    e: "When two companies moved to fully open plans, face-to-face interaction dropped by roughly 70 percent while email and messaging rose. Removing privacy prompted people to put on headphones and withdraw, and the collaboration migrated to channels where it could not be overheard." },
+  { t: "Work & motivation",
+    s: "A single well-designed training session can measurably reduce workplace bias by making participants aware of the automatic associations shaping their decisions.",
+    e: "Brief training reliably changes what people can report about bias and rarely changes behavior for long. Effects on the associations themselves tend to fade within days, and effects on actual decisions are small or absent. Changing the decision process, through structured criteria and accountability, does more than changing individual awareness." },
+  { t: "Work & motivation",
+    s: "Larger bonuses produce better performance. The bigger the reward on the line, the harder people work and the better the result.",
+    e: "This holds for straightforward physical or repetitive tasks. On tasks requiring judgment, memory, or creativity, very large incentives can make performance worse, because the stakes raise arousal past the point where it helps. Studies offering participants the equivalent of several months of pay found the highest-incentive group performing worst." }
+];
+
+/* The magic word. Change this one string to change the word for the term. */
+const MAGIC_WORD = 'reveal';
+
+/* ═══════════════════════════════════════════════════════════
+   CARD NUMBERS
+   Each statement gets a stable number so students can compare
+   ("what did you get?"). The numbers are shuffled with a fixed
+   seed across both decks, so the number never hints at the answer.
+   ═══════════════════════════════════════════════════════════ */
+const DECK_SIZE = TRUE_DECK.length + FALSE_DECK.length;
+
+function seededRandom(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+(function numberTheDeck() {
+  const numbers = [];
+  for (let i = 1; i <= DECK_SIZE; i++) numbers.push(i);
+  const rand = seededRandom(20260821);
+  for (let i = numbers.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    const swap = numbers[i]; numbers[i] = numbers[j]; numbers[j] = swap;
+  }
+  TRUE_DECK.concat(FALSE_DECK).forEach((item, i) => { item.n = numbers[i]; });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   THE DRAW — a fresh coin flip on every page load
+   Half the time the statement comes from the true deck, half the
+   time from the false deck, regardless of how big each deck is.
+   ═══════════════════════════════════════════════════════════ */
+const isTrueStatement = Math.random() < 0.5;
+const deck = isTrueStatement ? TRUE_DECK : FALSE_DECK;
+const card = deck[Math.floor(Math.random() * deck.length)];
+
+/* ═══════════════════════════════════════════════════════════
+   STATE
+   ═══════════════════════════════════════════════════════════ */
+let selection = null;    // true | false | null — the pending answer
+let answered = false;    // locked in, waiting on the magic word
+let revealed = false;
+let locked = false;      // swallows the stray second tap of a double-tap
+let lockTimer = null;
+
+/* ═══════════════════════════════════════════════════════════
+   ELEMENTS
+   ═══════════════════════════════════════════════════════════ */
+const $ = (id) => document.getElementById(id);
+
+const screens = {
+  intro:    $('screen-intro'),
+  question: $('screen-question'),
+  hold:     $('screen-hold'),
+  reveal:   $('screen-reveal')
+};
+
+const topbar     = $('topbar');
+const counterEl  = $('counter');
+const liveRegion = $('liveRegion');
+const magicInput = $('magicInput');
+const magicError = $('magicError');
+
+const choiceTrue  = $('choiceTrue');
+const choiceFalse = $('choiceFalse');
+const choiceEls   = [choiceTrue, choiceFalse];
+
+/* ═══════════════════════════════════════════════════════════
+   SETUP
+   ═══════════════════════════════════════════════════════════ */
+function init() {
+  $('chipDeck').textContent = DECK_SIZE + ' in the deck';
+
+  $('btnStart').addEventListener('click', showQuestion);
+  $('btnSubmit').addEventListener('click', submitAnswer);
+  $('btnReveal').addEventListener('click', tryReveal);
+  $('btnAgain').addEventListener('click', () => {
+    if (locked) return;   // don't let a double-tap on Unlock throw away the reveal
+    window.location.reload();
+  });
+
+  choiceEls.forEach((btn) => {
+    btn.addEventListener('click', () => select(btn.dataset.value === 'true'));
+    btn.addEventListener('keydown', onChoiceKeydown);
+  });
+
+  magicInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); tryReveal(); }
+  });
+  magicInput.addEventListener('input', clearMagicError);
+
+  locked = false;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN SWITCHING
+   ═══════════════════════════════════════════════════════════ */
+/* The action button sits at the same spot on every screen, so a fast
+   double-tap would otherwise fire the *next* screen's button too. Ignore
+   input for one transition's worth of time after each screen change. */
+function lockInput() {
+  locked = true;
+  clearTimeout(lockTimer);
+  lockTimer = setTimeout(() => { locked = false; }, 420);
+}
+
+function showScreen(name, focusEl) {
+  lockInput();
+  Object.keys(screens).forEach((key) => {
+    screens[key].classList.toggle('is-active', key === name);
+  });
+  const scroller = screens[name].querySelector('.scroller');
+  if (scroller) scroller.scrollTop = 0;
+  if (focusEl) {
+    // Wait for the screen to be painted before moving focus.
+    requestAnimationFrame(() => focusEl.focus({ preventScroll: true }));
+  }
+}
+
+function announce(msg) {
+  liveRegion.textContent = '';
+  // Re-set on the next frame so repeat messages are still announced.
+  requestAnimationFrame(() => { liveRegion.textContent = msg; });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FLOW
+   ═══════════════════════════════════════════════════════════ */
+function showQuestion() {
+  if (locked) return;
+
+  topbar.hidden = false;
+  counterEl.textContent = 'Statement #' + card.n;
+
+  $('qKicker').textContent = card.t + ' · True or false?';
+  $('qStatement').textContent = card.s;
+
+  choiceEls.forEach((btn, i) => {
+    btn.setAttribute('aria-checked', 'false');
+    btn.tabIndex = i === 0 ? 0 : -1;
+  });
+  $('btnSubmit').disabled = true;
+
+  showScreen('question', $('qStatement'));
+}
+
+/* No double-tap guard here: choosing is reversible and changes no screen, so an
+   eager tap landing just after the screen change should count, not be swallowed. */
+function select(value) {
+  if (answered) return;
+  selection = value;
+  choiceEls.forEach((btn) => {
+    const isPicked = (btn.dataset.value === 'true') === value;
+    btn.setAttribute('aria-checked', String(isPicked));
+    btn.tabIndex = isPicked ? 0 : -1;
+  });
+  $('btnSubmit').disabled = false;
+}
+
+function onChoiceKeydown(event) {
+  const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'];
+  if (keys.indexOf(event.key) === -1) return;
+  event.preventDefault();
+  const current = choiceEls.indexOf(event.currentTarget);
+  const forward = event.key === 'ArrowRight' || event.key === 'ArrowDown';
+  const next = (current + (forward ? 1 : -1) + choiceEls.length) % choiceEls.length;
+  select(choiceEls[next].dataset.value === 'true');
+  choiceEls[next].focus();
+}
+
+function submitAnswer() {
+  // No lock here: reaching this button requires picking a choice first.
+  if (selection === null || answered) return;
+  answered = true;
+
+  counterEl.textContent = 'Statement #' + card.n + ' · locked';
+  $('holdChoice').textContent = selection ? 'TRUE' : 'FALSE';
+  $('holdStatement').textContent = card.s;
+
+  showScreen('hold', $('holdTitle'));
+  announce('Answer locked in. Enter the magic word to see the answer.');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THE MAGIC WORD
+   Accepted with or without capitals, with or without quotation
+   marks (straight or curly), and with stray spaces or end
+   punctuation: reveal / Reveal / REVEAL / "reveal" / 'Reveal!'
+   ═══════════════════════════════════════════════════════════ */
+function normalizeMagic(raw) {
+  return String(raw)
+    .replace(/[‘’‚‛′‵]/g, "'")   // curly singles
+    .replace(/[“”„‟″‶]/g, '"')   // curly doubles
+    .replace(/^[\s"'`«»‹›]+/, '')          // opening quotes
+    .replace(/[\s"'`«»‹›.,!?;:]+$/, '')    // closing quotes + punctuation
+    .trim()
+    .toLowerCase();
+}
+
+function clearMagicError() {
+  magicError.hidden = true;
+  magicError.textContent = '';
+  magicInput.classList.remove('is-wrong');
+}
+
+function tryReveal() {
+  if (locked || revealed) return;
+
+  if (normalizeMagic(magicInput.value) !== MAGIC_WORD) {
+    const empty = magicInput.value.trim() === '';
+    magicError.textContent = empty
+      ? 'Type the magic word first — Dr. Avilla will give it to the class.'
+      : 'That is not the word. Hang tight, it is coming.';
+    magicError.hidden = false;
+    magicInput.classList.remove('is-wrong');
+    // Restart the shake even on a repeat wrong answer.
+    void magicInput.offsetWidth;
+    magicInput.classList.add('is-wrong');
+    magicInput.focus();
+    return;
+  }
+
+  revealed = true;
+  renderReveal();
+}
+
+function renderReveal() {
+  const correct = selection === isTrueStatement;
+
+  counterEl.textContent = 'Statement #' + card.n + ' · revealed';
+
+  const verdict = $('verdict');
+  verdict.classList.toggle('right', correct);
+  verdict.classList.toggle('wrong', !correct);
+  $('verdictIcon').textContent = correct ? '✓' : '✕';
+  $('verdictHeadline').textContent = correct ? 'You got it!' : 'Not quite.';
+  $('verdictSideline').textContent = correct
+    ? 'You said ' + (selection ? 'true' : 'false') + ', and so it is.'
+    : 'You said ' + (selection ? 'true' : 'false') + '.';
+
+  $('rStatement').textContent = card.s;
+  $('answerPill').textContent = isTrueStatement ? 'The answer: True' : 'The answer: False';
+  $('rText').textContent = card.e;
+  $('rFootnote').textContent = isTrueStatement
+    ? 'Statement #' + card.n + ' · ' + card.t + ' · from 80 Psychology Facts That Surprise Most People'
+    : 'Statement #' + card.n + ' · ' + card.t + ' · from Psychology Myths, where every statement is false';
+
+  showScreen('reveal', verdict);
+  announce((correct ? 'Correct. ' : 'Incorrect. ')
+    + 'The answer is ' + (isTrueStatement ? 'true' : 'false') + '.');
+}
+
+init();
+</script>
+</body>
+</html>
