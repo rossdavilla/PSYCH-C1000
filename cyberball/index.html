@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1E1B4B">
+<meta name="description" content="Cyberball — an online ball-tossing game for PSYCH-C1000.">
+<title>Cyberball — PSYCH-C1000</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --purple:#6D28D9;
+  --purple-dark:#5B21B6;
+  --indigo:#1E1B4B;
+  --orange:#F37D26;
+  --sky:#DCE9F7;
+  --sky-deep:#BCD3EC;
+  --grass:#E8F1E4;
+  --white:#FFFFFF;
+  --ink:#1F2233;
+  --ink-soft:#5A5F78;
+  --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{
+  height:100%;
+  overflow:hidden;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+  font-family:var(--font);
+  color:var(--ink);
+  background:var(--indigo);
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+/* ══ FIELD ══════════════════════════════════════════════ */
+#field{
+  position:fixed;
+  inset:0;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background:
+    radial-gradient(130% 90% at 50% 0%, #F2F7FD 0%, var(--sky) 52%, var(--sky-deep) 100%);
+  overflow:hidden;
+}
+/* soft ground band so the figures feel planted */
+#field::after{
+  content:'';
+  position:absolute;
+  left:-10%;right:-10%;bottom:-14%;
+  height:52%;
+  border-radius:50% 50% 0 0 / 22% 22% 0 0;
+  background:var(--grass);
+  opacity:.85;
+}
+
+.layer{position:absolute;inset:0;z-index:2}
+
+/* ══ CHARACTERS ═════════════════════════════════════════ */
+.actor{
+  position:absolute;
+  transform:translateX(-50%);
+  display:grid;
+  place-items:end center;
+  pointer-events:none;
+}
+.actor .art{position:relative;height:100%;aspect-ratio:100/170}
+.actor .art > *{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  opacity:0;
+  transition:opacity .09s linear;
+}
+.actor .art > *.on{opacity:1}
+.actor img,#hand img{object-fit:contain;object-position:center bottom}
+
+#pL{left:19%;top:17%;height:47%}
+#pR{left:81%;top:17%;height:47%}
+
+.nametag{
+  position:absolute;
+  top:100%;
+  margin-top:6px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:clamp(10px,1.9vh,15px);
+  font-weight:700;
+  letter-spacing:.04em;
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+
+/* the participant's hand, cropped by the bottom edge */
+#hand{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  height:36%;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+#hand .art{position:relative;height:100%;aspect-ratio:170/140}
+#hand .art > *{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .09s linear}
+#hand .art > *.on{opacity:1}
+
+/* throw wind-up */
+.actor.pose-throw .art{animation:lean .28s ease-out}
+@keyframes lean{
+  0%{transform:translateY(0) scale(1,1)}
+  40%{transform:translateY(-3%) scale(.97,1.04)}
+  100%{transform:translateY(0) scale(1,1)}
+}
+#hand.pose-throw .art{animation:push .3s ease-out}
+@keyframes push{
+  0%{transform:translateY(0)}
+  45%{transform:translateY(-9%)}
+  100%{transform:translateY(0)}
+}
+.actor.catching .art,#hand.catching .art{animation:catchpop .26s ease-out}
+@keyframes catchpop{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.07,.94)}
+  100%{transform:scale(1)}
+}
+
+/* ══ TAP TARGETS ════════════════════════════════════════ */
+.tapzone{
+  position:absolute;
+  top:0;bottom:0;
+  width:50%;
+  z-index:6;
+  display:none;
+}
+.tapzone.left{left:0}
+.tapzone.right{right:0}
+body.armed .tapzone{display:block}
+
+.ring{
+  position:absolute;
+  left:50%;top:48%;
+  width:118%;
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  border:3px solid var(--purple);
+  opacity:0;
+  z-index:-1;
+}
+body.armed .ring{animation:pulse 1.5s ease-out infinite}
+@keyframes pulse{
+  0%{opacity:.55;transform:translate(-50%,-50%) scale(.82)}
+  70%{opacity:0;transform:translate(-50%,-50%) scale(1.06)}
+  100%{opacity:0}
+}
+
+/* ══ BALL ═══════════════════════════════════════════════ */
+#ball{
+  position:absolute;
+  left:0;top:0;
+  width:var(--ball,34px);
+  height:var(--ball,34px);
+  margin:calc(var(--ball,34px) / -2);
+  z-index:5;
+  opacity:0;
+  will-change:transform;
+}
+#ball.show{opacity:1}
+#ball .fallback{
+  width:100%;height:100%;
+  border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, #FFB266 0%, var(--orange) 46%, #C9560F 100%);
+  box-shadow:inset 0 -3px 6px rgba(0,0,0,.22);
+  position:relative;
+}
+#ball .fallback::before,#ball .fallback::after{
+  content:'';
+  position:absolute;
+  inset:12% 6%;
+  border:2px solid rgba(90,30,0,.42);
+  border-radius:50%;
+}
+#ball .fallback::after{inset:6% 12%}
+#ball img{width:100%;height:100%;object-fit:contain;display:block}
+#ball .shadowdot{display:none}
+
+/* ball shadow on the ground */
+#shadow{
+  position:absolute;
+  left:0;top:0;
+  width:30px;height:9px;
+  margin:-4.5px -15px;
+  border-radius:50%;
+  background:rgba(31,34,51,.16);
+  filter:blur(1px);
+  z-index:-1;
+  opacity:0;
+  will-change:transform;
+}
+#shadow.show{opacity:1}
+
+/* ══ COACH LINE ═════════════════════════════════════════ */
+#coach{
+  position:absolute;
+  left:50%;
+  top:calc(env(safe-area-inset-top) + 10px);
+  transform:translateX(-50%) translateY(-6px);
+  z-index:7;
+  padding:7px 16px;
+  border-radius:999px;
+  background:rgba(31,34,51,.88);
+  color:#fff;
+  font-size:clamp(11px,2.1vh,15px);
+  font-weight:700;
+  letter-spacing:.01em;
+  white-space:nowrap;
+  opacity:0;
+  transition:opacity .22s ease, transform .22s ease;
+  pointer-events:none;
+}
+#coach.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#tag{
+  position:absolute;
+  top:calc(env(safe-area-inset-top) + 12px);
+  left:calc(env(safe-area-inset-left) + 16px);
+  z-index:7;
+  font-size:clamp(10px,1.8vh,13px);
+  font-weight:800;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:rgba(31,34,51,.33);
+  opacity:0;
+  transition:opacity .25s ease;
+}
+#tag.show{opacity:1}
+
+/* ══ SCREENS ════════════════════════════════════════════ */
+.screen{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:none;
+  place-items:center;
+  padding:max(18px,env(safe-area-inset-top)) max(22px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));
+  background:var(--indigo);
+  color:#fff;
+  text-align:center;
+}
+.screen.on{display:grid}
+.screen .inner{max-width:min(620px,92vw);width:100%}
+.screen.fading{animation:fadein .3s ease}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+.eyebrow{
+  font-size:clamp(10px,1.9vh,12px);
+  font-weight:800;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--orange);
+  margin-bottom:10px;
+}
+.screen h1{
+  font-size:clamp(24px,6.4vh,42px);
+  font-weight:900;
+  letter-spacing:-.02em;
+  line-height:1.08;
+  margin-bottom:12px;
+}
+.screen p{
+  font-size:clamp(13px,2.7vh,18px);
+  line-height:1.55;
+  color:rgba(255,255,255,.76);
+  max-width:46ch;
+  margin:0 auto 10px;
+}
+.screen p strong{color:#fff}
+
+.btn{
+  margin-top:clamp(14px,3vh,26px);
+  display:inline-block;
+  border:0;
+  cursor:pointer;
+  font-family:inherit;
+  font-size:clamp(14px,2.8vh,18px);
+  font-weight:800;
+  letter-spacing:.01em;
+  color:#fff;
+  background:var(--purple);
+  padding:clamp(11px,2.3vh,16px) clamp(26px,6vw,46px);
+  border-radius:999px;
+  box-shadow:0 8px 24px rgba(109,40,217,.42);
+  transition:transform .12s ease, background .12s ease;
+}
+.btn:active{transform:scale(.97);background:var(--purple-dark)}
+.btn:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+
+/* connecting */
+.dots{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:20px;
+}
+.dots i{
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(255,255,255,.4);
+  animation:blink 1.1s ease-in-out infinite;
+}
+.dots i:nth-child(2){animation-delay:.16s}
+.dots i:nth-child(3){animation-delay:.32s}
+@keyframes blink{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+
+.found{
+  list-style:none;
+  margin:18px auto 0;
+  max-width:300px;
+  font-size:clamp(12px,2.4vh,16px);
+  font-weight:600;
+  color:rgba(255,255,255,.55);
+  text-align:left;
+}
+.found li{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:6px 0;
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity .3s ease, transform .3s ease;
+}
+.found li.in{opacity:1;transform:none;color:#fff}
+.found li::before{
+  content:'';
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.25);
+  flex:none;
+}
+.found li.in::before{background:#4ADE80;box-shadow:0 0 0 4px rgba(74,222,128,.18)}
+
+/* instructor strip */
+#dev{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:60;
+  display:none;
+  padding:5px 10px calc(5px + env(safe-area-inset-bottom));
+  background:rgba(31,34,51,.92);
+  color:#9CF;
+  font:600 11px/1.5 ui-monospace,Menlo,Consolas,monospace;
+  letter-spacing:.03em;
+  text-align:center;
+}
+body.dev #dev{display:block}
+#dev a{color:var(--orange);margin-left:10px}
+
+/* rotate nag */
+#rotate{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:none;
+  place-items:center;
+  padding:30px;
+  background:var(--indigo);
+  color:#fff;
+  text-align:center;
+}
+#rotate svg{width:86px;height:86px;margin:0 auto 20px;display:block}
+#rotate h2{font-size:21px;font-weight:800;margin-bottom:8px}
+#rotate p{font-size:15px;color:rgba(255,255,255,.7);max-width:30ch;margin:0 auto}
+@media (orientation:portrait) and (max-width:900px){
+  #rotate{display:grid}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .ring,.dots i{animation:none}
+  .actor .art,#hand .art{animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ PLAYFIELD ══════════════════════════════════════ -->
+<div id="field">
+  <div class="layer">
+
+    <div class="actor" id="pL" data-player="1">
+      <span class="ring"></span>
+      <div class="art"></div>
+      <span class="nametag">Alex</span>
+    </div>
+
+    <div class="actor" id="pR" data-player="2">
+      <span class="ring"></span>
+      <div class="art"></div>
+      <span class="nametag">Casey</span>
+    </div>
+
+    <div id="hand"><div class="art"></div></div>
+
+    <div id="shadow"></div>
+    <div id="ball"><div class="fallback"></div></div>
+  </div>
+
+  <div class="tapzone left"  data-target="1"></div>
+  <div class="tapzone right" data-target="2"></div>
+
+  <div id="tag">Practice round</div>
+  <div id="coach">Tap a player to pass the ball</div>
+</div>
+
+<!-- ══ SCREENS ════════════════════════════════════════ -->
+<section class="screen" id="s-intro">
+  <div class="inner">
+    <p class="eyebrow">PSYCH-C1000 · Class activity</p>
+    <h1>Cyberball</h1>
+    <p>You're about to play a simple ball-tossing game online with two other players.</p>
+    <p>There's no score and nothing to win — we're interested in your <strong>mental visualization</strong> of the game, so just picture the scene as vividly as you can while you play.</p>
+    <button class="btn" id="go-practice">Start</button>
+  </div>
+</section>
+
+<section class="screen" id="s-practice">
+  <div class="inner">
+    <p class="eyebrow">First</p>
+    <h1>A quick practice</h1>
+    <p>You'll warm up with two practice players so you get the hang of it.</p>
+    <p><strong>When you catch the ball, tap the player you want to throw it to.</strong></p>
+    <button class="btn" id="go-practice-start">I'm ready</button>
+  </div>
+</section>
+
+<section class="screen" id="s-connect">
+  <div class="inner">
+    <p class="eyebrow">Practice complete</p>
+    <h1>Finding other players</h1>
+    <p>Hang tight — connecting you to two other people playing right now.</p>
+    <ul class="found">
+      <li id="f1">Player 2 connected — Alex</li>
+      <li id="f2">Player 3 connected — Casey</li>
+    </ul>
+    <div class="dots" id="connect-dots"><i></i><i></i><i></i></div>
+    <button class="btn" id="go-main" style="display:none">Start the game</button>
+  </div>
+</section>
+
+<section class="screen" id="s-end">
+  <div class="inner">
+    <p class="eyebrow">Finished</p>
+    <h1>That's the end of the game</h1>
+    <p>Thanks for playing.</p>
+    <p>Put your phone down and look up — <strong>we'll talk about what just happened together in class.</strong></p>
+  </div>
+</section>
+
+<div id="rotate">
+  <div>
+    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="30" y="12" width="40" height="66" rx="6"/>
+      <line x1="42" y1="70" x2="58" y2="70"/>
+      <path d="M18 86a30 30 0 0 0 30-30" stroke="#F37D26"/>
+      <path d="M12 76l6 11 11-6" stroke="#F37D26"/>
+    </svg>
+    <h2>Turn your phone sideways</h2>
+    <p>This game needs landscape mode. Rotate your phone to play.</p>
+  </div>
+</div>
+
+<div id="dev"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   CYBERBALL  ·  PSYCH-C1000
+   Williams & Jarvis (2006) ball-toss paradigm.
+
+   Conditions are assigned at random, 50/50, the first time a
+   student opens the page, then remembered so a reload cannot
+   reshuffle it. Nothing is stored or sent anywhere beyond this
+   phone — see README.md.
+
+   Instructor tools:
+     ?instructor   show a debug strip (condition, throw counts)
+     ?reset        clear this phone's assignment and play again
+     ?force=in     force the inclusion condition
+     ?force=ex     force the exclusion condition
+   ═══════════════════════════════════════════════════════ */
+
+const CONFIG = {
+  practiceThrows: 12,   // warm-up, ball shared equally
+  mainThrows:     30,   // standard Cyberball length
+  thinkMin:       520,  // how long a computer player "decides" (ms)
+  thinkMax:      1350,
+  flightMin:      560,  // ball flight time (ms)
+  flightMax:      820,
+  afterCatch:     260,  // beat after a catch before the next throw
+  playerTimeout: 9000,  // auto-throw if the student doesn't tap
+  nudgeAfter:    3200,  // show the coach hint again after this long
+  excludeOn:     [1,3], // in exclusion, these computer throws come to you
+  rescueAfter:      5,  // inclusion safety net: never ignored this long
+};
+
+const NAMES = { 1:'Alex', 2:'Casey' };
+
+/* ── art: built-in SVG, auto-upgraded to PNGs if present ── */
+const ART = {
+  1:    { dir:'img', base:'alex',  poses:['idle','hold','throw'] },
+  2:    { dir:'img', base:'casey', poses:['idle','hold','throw'] },
+  hand: { dir:'img', base:'hand',  poses:['idle','hold','throw'] },
+  ball: 'img/ball.png',
+};
+
+/* ── ball anchor points, as a fraction of the field ────── */
+const ANCHORS = {
+  1: { x:.208, y:.455 },
+  2: { x:.792, y:.455 },
+  0: { x:.500, y:.735 },
+};
+
+/* ═══ tiny helpers ═══════════════════════════════════════ */
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rand  = (a,b) => a + Math.random()*(b-a);
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const field  = $('#field');
+const ball   = $('#ball');
+const shadow = $('#shadow');
+const coach  = $('#coach');
+const tag    = $('#tag');
+
+const Q = new URLSearchParams(location.search);
+const DEV = Q.has('instructor') || Q.has('dev');
+if (DEV) document.body.classList.add('dev');
+
+/* ═══ condition assignment ═══════════════════════════════ */
+const KEY = 'psychc1000-cyberball';
+
+function loadState(){
+  try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
+  catch { return null; }
+}
+function saveState(s){
+  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
+}
+
+if (Q.has('reset')) { try { localStorage.removeItem(KEY); } catch {} }
+
+let session = loadState();
+if (!session) {
+  session = {
+    condition: Math.random() < 0.5 ? 'inclusion' : 'exclusion',
+    assigned: new Date().toISOString(),
+    done: false,
+    received: 0,
+  };
+  saveState(session);
+}
+const forced = Q.get('force');
+if (forced === 'in' || forced === 'inclusion')  session.condition = 'inclusion';
+if (forced === 'ex' || forced === 'exclusion') session.condition = 'exclusion';
+
+/* ═══ built-in art ═══════════════════════════════════════ */
+/* Each limb is stroked twice — a fatter ink pass, then the colour
+   pass on top — which gives a clean outline with no seams. */
+function figure(pose, skin, shirt, pants, hair, flip){
+  const arms = {
+    idle:  ['M34 64 L25 100', 'M66 64 L75 100'],
+    hold:  ['M34 62 L46 94',  'M66 62 L54 94'],
+    throw: ['M34 64 L23 96',  'M66 57 L92 29'],
+  }[pose];
+  const legs = ['M43 98 L39 150', 'M57 98 L61 150'];
+  const limb = (d, col, w) => `<path d="${d}" stroke="${col}" stroke-width="${w}"/>`;
+
+  return `<svg viewBox="0 0 100 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round"
+       ${flip ? 'transform="translate(100,0) scale(-1,1)"' : ''}>
+      ${legs.map(d => limb(d,'#1F2233',15.5)).join('')}
+      ${legs.map(d => limb(d,pants,11.5)).join('')}
+      <path d="M39 151 L30 153" stroke="#1F2233" stroke-width="8"/>
+      <path d="M61 151 L70 153" stroke="#1F2233" stroke-width="8"/>
+
+      <rect x="31" y="51" width="38" height="52" rx="16" fill="${shirt}" stroke="#1F2233" stroke-width="3.4"/>
+
+      ${arms.map(d => limb(d,'#1F2233',13.5)).join('')}
+      ${arms.map(d => limb(d,skin,10)).join('')}
+
+      <circle cx="50" cy="29" r="18.5" fill="${skin}" stroke="#1F2233" stroke-width="3.4"/>
+      <path d="M31.5 25a18.5 18.5 0 0 1 37 0 28 28 0 0 0-37 0Z" fill="${hair}" stroke="#1F2233" stroke-width="2.6"/>
+      <circle cx="43" cy="31" r="2.7" fill="#1F2233"/>
+      <circle cx="57" cy="31" r="2.7" fill="#1F2233"/>
+      <path d="M44.5 39q5.5 4.5 11 0" stroke="#1F2233" stroke-width="2.6"/>
+    </g>
+  </svg>`;
+}
+
+/* The participant's own hand, cropped by the bottom of the screen.
+   Drawn as a dark silhouette with the skin pass laid over it, so the
+   fingers read as separate shapes without internal seams. */
+function handArt(pose){
+  const tops = {
+    idle:  [34, 18, 22, 38],
+    hold:  [50, 36, 40, 54],
+    throw: [18,  4,  8, 22],
+  }[pose];
+  const tilt = pose === 'throw' ? -4 : 0;
+
+  const shapes =
+    tops.map((t,i) => `<rect x="${38+i*28}" y="${t}" width="20" height="${104-t}" rx="10"/>`).join('') +
+    `<rect x="2" y="64" width="52" height="25" rx="12.5" transform="rotate(-28 28 76)"/>` +
+    `<rect x="30" y="70" width="112" height="74" rx="30"/>`;
+
+  return `<svg viewBox="0 0 170 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g transform="rotate(${tilt} 85 140)">
+      <g fill="#1F2233" stroke="#1F2233" stroke-width="5" stroke-linejoin="round">${shapes}</g>
+      <g fill="#F3C3A0">${shapes}</g>
+    </g>
+  </svg>`;
+}
+
+const SKINS = [
+  { skin:'#F3C3A0', shirt:'#6D28D9', pants:'#3C3F58', hair:'#2B2230' },
+  { skin:'#C98B5E', shirt:'#F37D26', pants:'#2E4057', hair:'#1F1A1F' },
+];
+
+function buildArt(){
+  [['#pL',1],['#pR',2]].forEach(([sel,id]) => {
+    const art = $(sel+' .art');
+    const c = SKINS[id-1];
+    art.innerHTML = ['idle','hold','throw']
+      .map(p => `<div class="frame" data-pose="${p}">${figure(p,c.skin,c.shirt,c.pants,c.hair,id===2)}</div>`)
+      .join('');
+  });
+  const h = $('#hand .art');
+  h.innerHTML = ['idle','hold','throw']
+    .map(p => `<div class="frame" data-pose="${p}">${handArt(p)}</div>`)
+    .join('');
+}
+
+/* Swap in PNG frames for any slot whose whole set loads. */
+function loadImg(src){
+  return new Promise(res => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => res(null);
+    i.src = src;
+  });
+}
+async function upgradeArt(){
+  for (const key of [1,2,'hand']){
+    const spec = ART[key];
+    const srcs = spec.poses.map(p => `${spec.dir}/${spec.base}-${p}.png`);
+    // probe one frame first, so a site with no art only asks for three files
+    if (!await loadImg(srcs[0])) continue;
+    const imgs = await Promise.all(srcs.slice(1).map(loadImg));
+    if (imgs.some(i => !i)) continue;
+    const art = key === 'hand' ? $('#hand .art') : $(key === 1 ? '#pL .art' : '#pR .art');
+    const current = art.querySelector('.frame.on')?.dataset.pose || 'idle';
+    art.innerHTML = spec.poses
+      .map((p,i) => `<div class="frame" data-pose="${p}"><img src="${srcs[i]}" alt=""></div>`)
+      .join('');
+    setPose(key === 'hand' ? 0 : key, current);
+  }
+  const b = await loadImg(ART.ball);
+  if (b) ball.innerHTML = `<img src="${ART.ball}" alt="">`;
+}
+
+/* ═══ posing ═════════════════════════════════════════════ */
+function slotOf(id){ return id === 0 ? $('#hand') : (id === 1 ? $('#pL') : $('#pR')); }
+
+function setPose(id, pose){
+  const el = slotOf(id);
+  el.querySelectorAll('.frame').forEach(f => f.classList.toggle('on', f.dataset.pose === pose));
+  el.classList.remove('pose-throw');
+  if (pose === 'throw') { void el.offsetWidth; el.classList.add('pose-throw'); }
+}
+function popCatch(id){
+  const el = slotOf(id);
+  el.classList.remove('catching');
+  void el.offsetWidth;
+  el.classList.add('catching');
+  setTimeout(() => el.classList.remove('catching'), 300);
+}
+
+/* ═══ geometry ═══════════════════════════════════════════ */
+function anchor(id){
+  const r = field.getBoundingClientRect();
+  const a = ANCHORS[id];
+  return { x:a.x*r.width, y:a.y*r.height };
+}
+function sizeBall(){
+  const r = field.getBoundingClientRect();
+  field.style.setProperty('--ball', Math.max(22, Math.min(46, r.height*0.085)) + 'px');
+}
+addEventListener('resize', sizeBall);
+addEventListener('orientationchange', () => setTimeout(sizeBall, 250));
+
+function putBall(p){
+  ball.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  const r = field.getBoundingClientRect();
+  shadow.style.transform = `translate(${p.x}px, ${r.height*0.86}px) scale(1)`;
+}
+function showBall(on){
+  ball.classList.toggle('show', on);
+  shadow.classList.toggle('show', on);
+}
+
+function fly(from, to, dur){
+  return new Promise(resolve => {
+    const r = field.getBoundingClientRect();
+    const ground = r.height * 0.86;
+    const dist = Math.hypot(to.x-from.x, to.y-from.y);
+    const arc = REDUCED ? 0 : Math.min(dist*0.20, r.height*0.26);
+    const spin = REDUCED ? 0 : (from.x < to.x ? 1 : -1) * rand(420, 760);
+    const t0 = performance.now();
+    (function step(now){
+      const t = Math.min(1, (now - t0) / dur);
+      const x = from.x + (to.x - from.x) * t;
+      const y = from.y + (to.y - from.y) * t - 4 * arc * t * (1 - t);
+      ball.style.transform = `translate(${x}px, ${y}px) rotate(${spin*t}deg)`;
+      const lift = Math.max(0, (ground - y) / r.height);
+      shadow.style.transform = `translate(${x}px, ${ground}px) scale(${1 - lift*0.35})`;
+      shadow.style.opacity = String(0.42 - lift*0.3);
+      if (t < 1) requestAnimationFrame(step); else resolve();
+    })(t0);
+  });
+}
+
+/* ═══ UI bits ════════════════════════════════════════════ */
+let coachTimer = null;
+function say(text){
+  clearTimeout(coachTimer);
+  coach.textContent = text;
+  coach.classList.add('show');
+}
+function hush(delay = 0){
+  clearTimeout(coachTimer);
+  coachTimer = setTimeout(() => coach.classList.remove('show'), delay);
+}
+function buzz(ms = 18){
+  try { navigator.vibrate && navigator.vibrate(ms); } catch {}
+}
+function devline(){
+  if (!DEV) return;
+  const r = round || {};
+  $('#dev').innerHTML =
+    `condition: <b>${session.condition.toUpperCase()}</b> · round: ${r.type || '—'} · ` +
+    `throws: ${r.thrown || 0}/${r.total || 0} · you caught: ${r.youGot || 0}` +
+    `<a href="?reset&instructor">reset</a>` +
+    `<a href="?force=in&instructor">force incl.</a>` +
+    `<a href="?force=ex&instructor">force excl.</a>`;
+}
+
+/* ═══ the round engine ═══════════════════════════════════ */
+let round = null;
+
+function pickReceiver(thrower){
+  const other = thrower === 1 ? 2 : 1;
+  round.cThrow++;
+
+  if (round.type === 'exclusion')
+    return CONFIG.excludeOn.includes(round.cThrow) ? 0 : other;
+
+  // practice: hand it over immediately so they learn the tap
+  if (round.type === 'practice' && round.cThrow === 1) return 0;
+
+  // inclusion + practice: even split, with a safety net
+  if (round.sinceYou >= CONFIG.rescueAfter) return 0;
+  return Math.random() < 0.5 ? 0 : other;
+}
+
+function armPlayer(){
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = target => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(auto); clearTimeout(nudge);
+      document.body.classList.remove('armed');
+      $$('.tapzone').forEach(z => z.removeEventListener('click', onTap));
+      hush();
+      resolve(target);
+    };
+    const onTap = e => finish(Number(e.currentTarget.dataset.target));
+
+    document.body.classList.add('armed');
+    $$('.tapzone').forEach(z => z.addEventListener('click', onTap));
+
+    if (round.type === 'practice') say('Tap a player to pass the ball');
+    const nudge = setTimeout(() => say('Tap a player to pass the ball'), CONFIG.nudgeAfter);
+    const auto  = setTimeout(() => finish(Math.random() < 0.5 ? 1 : 2), CONFIG.playerTimeout);
+  });
+}
+
+async function throwBall(from, to){
+  setPose(from, 'throw');
+  await sleep(REDUCED ? 60 : 150);
+  const dur = REDUCED ? 260 : rand(CONFIG.flightMin, CONFIG.flightMax);
+  await fly(anchor(from), anchor(to), dur);
+  setPose(from, 'idle');
+  setPose(to, 'hold');
+  popCatch(to);
+  if (to === 0) { buzz(); round.youGot++; }
+}
+
+async function playRound(type, total){
+  round = { type, total, thrown:0, cThrow:0, sinceYou:0, youGot:0 };
+  devline();
+
+  tag.textContent = type === 'practice' ? 'Practice round' : '';
+  tag.classList.toggle('show', type === 'practice');
+
+  let holder = Math.random() < 0.5 ? 1 : 2;
+  setPose(1, 'idle'); setPose(2, 'idle'); setPose(0, 'idle');
+  setPose(holder, 'hold');
+  putBall(anchor(holder));
+  showBall(true);
+  await sleep(800);
+
+  while (round.thrown < total){
+    let target;
+    if (holder === 0){
+      target = await armPlayer();
+    } else {
+      await sleep(rand(CONFIG.thinkMin, CONFIG.thinkMax));
+      target = pickReceiver(holder);
+    }
+
+    await throwBall(holder, target);
+    round.thrown++;
+    holder = target;
+    round.sinceYou = (target === 0) ? 0 : round.sinceYou + 1;
+    devline();
+    await sleep(CONFIG.afterCatch);
+  }
+
+  setPose(holder, 'idle');
+  showBall(false);
+  tag.classList.remove('show');
+  hush();
+}
+
+/* ═══ screens ════════════════════════════════════════════ */
+function show(id){
+  $$('.screen').forEach(s => s.classList.remove('on','fading'));
+  if (!id) return;
+  const el = $(id);
+  el.classList.add('on','fading');
+}
+
+async function runPractice(){
+  show(null);
+  await sleep(450);
+  await playRound('practice', CONFIG.practiceThrows);
+  await sleep(500);
+  await runConnect();
+}
+
+async function runConnect(){
+  show('#s-connect');
+  $('#f1').classList.remove('in');
+  $('#f2').classList.remove('in');
+  $('#go-main').style.display = 'none';
+  $('#connect-dots').style.display = 'flex';
+  await sleep(1400); $('#f1').classList.add('in');
+  await sleep(1500); $('#f2').classList.add('in');
+  await sleep(700);
+  $('#connect-dots').style.display = 'none';
+  $('#go-main').style.display = 'inline-block';
+}
+
+async function runMain(){
+  show(null);
+  await sleep(500);
+  await playRound(session.condition, CONFIG.mainThrows);
+  session.done = true;
+  session.received = round.youGot;
+  saveState(session);
+  await sleep(700);
+  show('#s-end');
+}
+
+/* ═══ boot ═══════════════════════════════════════════════ */
+buildArt();
+sizeBall();
+setPose(1,'idle'); setPose(2,'idle'); setPose(0,'idle');
+upgradeArt();
+devline();
+
+/* one tap only — a double tap must not start two rounds at once */
+function once(sel, fn){
+  const b = $(sel);
+  b.addEventListener('click', async () => {
+    if (b.dataset.used) return;
+    b.dataset.used = '1';
+    await fn();
+  });
+}
+once('#go-practice', () => show('#s-practice'));
+once('#go-practice-start', runPractice);
+once('#go-main', runMain);
+
+if (session.done && !Q.has('reset')) {
+  show('#s-end');
+} else {
+  show('#s-intro');
+}
+</script>
+</body>
+</html>
