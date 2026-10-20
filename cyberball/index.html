@@ -193,22 +193,6 @@ body.armed .ring{animation:pulse 1.5s ease-out infinite}
 }
 #ball .fallback::after{inset:6% 12%}
 #ball img{width:100%;height:100%;object-fit:contain;display:block}
-#ball .shadowdot{display:none}
-
-/* ball shadow on the ground */
-#shadow{
-  position:absolute;
-  left:0;top:0;
-  width:30px;height:9px;
-  margin:-4.5px -15px;
-  border-radius:50%;
-  background:rgba(31,34,51,.16);
-  filter:blur(1px);
-  z-index:-1;
-  opacity:0;
-  will-change:transform;
-}
-#shadow.show{opacity:1}
 
 /* ══ COACH LINE ═════════════════════════════════════════ */
 #coach{
@@ -410,7 +394,6 @@ body.dev #dev{display:block}
 
     <div id="hand"><div class="art"></div></div>
 
-    <div id="shadow"></div>
     <div id="ball"><div class="fallback"></div></div>
   </div>
 
@@ -536,7 +519,6 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const field  = $('#field');
 const ball   = $('#ball');
-const shadow = $('#shadow');
 const coach  = $('#coach');
 const tag    = $('#tag');
 
@@ -694,18 +676,14 @@ addEventListener('orientationchange', () => setTimeout(sizeBall, 250));
 
 function putBall(p){
   ball.style.transform = `translate(${p.x}px, ${p.y}px) scale(${p.s})`;
-  const r = field.getBoundingClientRect();
-  shadow.style.transform = `translate(${p.x}px, ${r.height*0.86}px) scale(${p.s})`;
 }
 function showBall(on){
   ball.classList.toggle('show', on);
-  shadow.classList.toggle('show', on);
 }
 
 function fly(from, to, dur){
   return new Promise(resolve => {
     const r = field.getBoundingClientRect();
-    const ground = r.height * 0.86;
     const dist = Math.hypot(to.x-from.x, to.y-from.y);
     const arc = REDUCED ? 0 : Math.min(dist*0.20, r.height*0.26);
     const spin = REDUCED ? 0 : (from.x < to.x ? 1 : -1) * rand(420, 760);
@@ -717,9 +695,6 @@ function fly(from, to, dur){
       // grow toward the viewer, shrink away from them
       const s = from.s + (to.s - from.s) * t;
       ball.style.transform = `translate(${x}px, ${y}px) scale(${s}) rotate(${spin*t}deg)`;
-      const lift = Math.max(0, (ground - y) / r.height);
-      shadow.style.transform = `translate(${x}px, ${ground}px) scale(${s * (1 - lift*0.35)})`;
-      shadow.style.opacity = String(0.42 - lift*0.3);
       if (t < 1) requestAnimationFrame(step); else resolve();
     })(t0);
   });
