@@ -524,7 +524,7 @@ const ART = {
 const ANCHORS = {
   1: { x:.208, y:.455, s:0.85 },
   2: { x:.792, y:.455, s:0.85 },
-  0: { x:.500, y:.735, s:1.55 },
+  0: { x:.500, y:.735, s:1.70 },
 };
 
 /* ═══ tiny helpers ═══════════════════════════════════════ */
@@ -598,7 +598,7 @@ function figure(pose, skin, shirt, pants, hair, flip){
 function handArt(pose){
   const tops = {
     idle:  [34, 18, 22, 38],
-    hold:  [50, 36, 40, 54],
+    hold:  [68, 65, 66, 68],   // curled into a fist around the ball
     throw: [18,  4,  8, 22],
   }[pose];
   const tilt = pose === 'throw' ? -4 : 0;
@@ -794,12 +794,14 @@ function armPlayer(){
 async function throwBall(from, to){
   setPose(from, 'throw');
   await sleep(REDUCED ? 60 : 150);
+  showBall(true);                       // back out of the student's fist
   const dur = REDUCED ? 260 : rand(CONFIG.flightMin, CONFIG.flightMax);
   await fly(anchor(from), anchor(to), dur);
   setPose(from, 'idle');
   setPose(to, 'hold');
   popCatch(to);
-  if (to === 0) { buzz(); round.youGot++; }
+  // the student's own catch closes a fist over the ball, so it goes away
+  if (to === 0) { showBall(false); buzz(); round.youGot++; }
 }
 
 async function playRound(type, total){

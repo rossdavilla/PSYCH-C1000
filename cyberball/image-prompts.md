@@ -117,14 +117,15 @@ same height, same build, same line weight, same simple face.
 > below it. Light skin, thick `#1F2233` outlines, flat color, transparent background, no shadow,
 > no sleeve, no text.
 
-## 8. Your hand — holding the ball
+## 8. Your hand — closed around the ball
 
 **File:** `img/hand-hold.png` · same canvas, same size, same position
 
-> The same hand, same size and same position in the frame, fingers now **curled in slightly** as
-> if they have just closed around something — fingertips lower and a little bent, still clearly
-> four separate fingers. Leave the hand empty: I'll draw the ball myself. The palm, thumb and
-> wrist must stay exactly where they were. Transparent background, no shadow, no text.
+> The same hand, same size and same position in the frame, now **closed into a fist** — the
+> fingers curled all the way down so only four small rounded knuckles show along the top edge of
+> the hand. Draw no ball: the fist is understood to be holding one, and the app hides the ball
+> for this pose. The palm and wrist must stay exactly where they were. Transparent background,
+> no shadow, no text.
 
 ## 9. Your hand — throwing
 

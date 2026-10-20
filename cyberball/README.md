@@ -94,10 +94,11 @@ const CONFIG = {
 
 `ANCHORS` sets where the ball sits for each player: `x` and `y` as a fraction of the screen, and
 `s`, the size the ball takes there. The two players sit at `s: 0.85` and the student's own hand
-at `s: 1.55`, which is what makes the ball swell as it comes toward them and shrink as it goes
-away. The ball interpolates between the two ends in flight. Nudge `x`/`y` if you swap in
-illustrated art and the ball doesn't quite land in the hands; nudge `s` to dial the perspective
-up or down.
+at `s: 1.70` — exactly double — so the ball doubles in size as it comes toward them and halves as
+it goes away, which is what sells the perspective. It interpolates between the two ends in
+flight, and a throw between the two players stays one size, since they are at the same depth.
+Nudge `x`/`y` if you swap in illustrated art and the ball doesn't quite land in the hands; nudge
+`s` to dial the perspective up or down.
 
 ## Artwork
 
@@ -108,6 +109,11 @@ three poses** for that character are present, so a half-finished set never break
 
 The student's own hand is drawn from the back with no visible thumb. At phone size a thumb only
 ever read as a fifth finger, so it is hidden behind the hand.
+
+When the student catches the ball, the hand closes into a fist and the ball is hidden rather than
+drawn resting on the fingers — the ball is in their hand, so there is nothing to see. It
+reappears as the throw begins. If you replace the hand with illustrated art, `hand-hold.png`
+should be that closed fist.
 
 ## Phones
 
