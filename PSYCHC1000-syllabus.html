@@ -568,6 +568,26 @@ body {
   margin-bottom: 12px;
 }
 .fact-note { font-size: 13px; color: rgba(255,255,255,0.45); font-style: italic; }
+.fact-cta-wrap { text-align: center; margin-top: 20px; }
+/* `.section-body a` (below) is more specific than a bare class, so scope the
+   button rules the same way or the label renders purple-on-purple. */
+.section-body a.fact-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 22px;
+  background: var(--purple);
+  color: var(--white);
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.section-body a.fact-cta:hover  { background: var(--purple-dark); color: var(--white); }
+.section-body a.fact-cta:active { background: var(--purple-darker); }
+.fact-cta-note { font-size: 13px; color: var(--text-muted); margin-top: 11px; line-height: 1.55; }
 
 /* ── SHARED TEXTAREA / SAVE ────────────────────────────── */
 textarea {
@@ -796,6 +816,10 @@ textarea:focus { outline: none; border-color: var(--purple); }
         <div class="fact-label">Psychology Fact</div>
         <div class="fact-text" id="factText">The clitoris contains about 10,000 nerve endings — about 2.5 times more than the penis.</div>
         <div class="fact-note">🔄 Reload the page for a new fact!</div>
+      </div>
+      <div class="fact-cta-wrap">
+        <a class="fact-cta" href="mythorfact.html">🧠 Play Myth or Fact? →</a>
+        <p class="fact-cta-note">One statement, true or false — we play this together in class, so hang on to your answer until I give you the magic word.</p>
       </div>
     </div>
   </div>
