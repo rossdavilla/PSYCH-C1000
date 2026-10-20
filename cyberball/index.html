@@ -399,13 +399,13 @@ body.dev #dev{display:block}
     <div class="actor" id="pL" data-player="1">
       <span class="ring"></span>
       <div class="art"></div>
-      <span class="nametag">Alex</span>
+      <span class="nametag">Participant 2</span>
     </div>
 
     <div class="actor" id="pR" data-player="2">
       <span class="ring"></span>
       <div class="art"></div>
-      <span class="nametag">Casey</span>
+      <span class="nametag">Participant 3</span>
     </div>
 
     <div id="hand"><div class="art"></div></div>
@@ -448,8 +448,8 @@ body.dev #dev{display:block}
     <h1>Finding other players</h1>
     <p>Hang tight — connecting you to two other people playing right now.</p>
     <ul class="found">
-      <li id="f1">Player 2 connected — Alex</li>
-      <li id="f2">Player 3 connected — Casey</li>
+      <li id="f1">Participant 2 connected</li>
+      <li id="f2">Participant 3 connected</li>
     </ul>
     <div class="dots" id="connect-dots"><i></i><i></i><i></i></div>
     <button class="btn" id="go-main" style="display:none">Start the game</button>
@@ -461,7 +461,6 @@ body.dev #dev{display:block}
     <p class="eyebrow">Finished</p>
     <h1>That's the end of the game</h1>
     <p>Thanks for playing.</p>
-    <p>Put your phone down and look up — <strong>we'll talk about what just happened together in class.</strong></p>
   </div>
 </section>
 
@@ -485,21 +484,19 @@ body.dev #dev{display:block}
    CYBERBALL  ·  PSYCH-C1000
    Williams & Jarvis (2006) ball-toss paradigm.
 
-   Conditions are assigned at random, 50/50, the first time a
-   student opens the page, then remembered so a reload cannot
-   reshuffle it. Nothing is stored or sent anywhere beyond this
-   phone — see README.md.
+   Conditions are assigned at random, 50/50, on every page load, so
+   the game is replayable and nothing is remembered between visits.
+   Nothing is stored or sent anywhere — see README.md.
 
    Instructor tools:
      ?instructor   show a debug strip (condition, throw counts)
-     ?reset        clear this phone's assignment and play again
      ?force=in     force the inclusion condition
      ?force=ex     force the exclusion condition
    ═══════════════════════════════════════════════════════ */
 
 const CONFIG = {
   practiceThrows: 12,   // warm-up, ball shared equally
-  mainThrows:     30,   // standard Cyberball length
+  mainThrows:     20,   // the round students are scored by
   thinkMin:       520,  // how long a computer player "decides" (ms)
   thinkMax:      1350,
   flightMin:      560,  // ball flight time (ms)
@@ -511,21 +508,23 @@ const CONFIG = {
   rescueAfter:      5,  // inclusion safety net: never ignored this long
 };
 
-const NAMES = { 1:'Alex', 2:'Casey' };
+const NAMES = { 1:'Participant 2', 2:'Participant 3' };
 
 /* ── art: built-in SVG, auto-upgraded to PNGs if present ── */
 const ART = {
-  1:    { dir:'img', base:'alex',  poses:['idle','hold','throw'] },
-  2:    { dir:'img', base:'casey', poses:['idle','hold','throw'] },
-  hand: { dir:'img', base:'hand',  poses:['idle','hold','throw'] },
+  1:    { dir:'img', base:'p2',   poses:['idle','hold','throw'] },
+  2:    { dir:'img', base:'p3',   poses:['idle','hold','throw'] },
+  hand: { dir:'img', base:'hand', poses:['idle','hold','throw'] },
   ball: 'img/ball.png',
 };
 
-/* ── ball anchor points, as a fraction of the field ────── */
+/* ── ball anchor points, as a fraction of the field, plus the
+      size the ball takes there: the two players are across the
+      circle, the student's own hand is right in front of them. ── */
 const ANCHORS = {
-  1: { x:.208, y:.455 },
-  2: { x:.792, y:.455 },
-  0: { x:.500, y:.735 },
+  1: { x:.208, y:.455, s:0.85 },
+  2: { x:.792, y:.455, s:0.85 },
+  0: { x:.500, y:.735, s:1.55 },
 };
 
 /* ═══ tiny helpers ═══════════════════════════════════════ */
@@ -545,29 +544,14 @@ const Q = new URLSearchParams(location.search);
 const DEV = Q.has('instructor') || Q.has('dev');
 if (DEV) document.body.classList.add('dev');
 
-/* ═══ condition assignment ═══════════════════════════════ */
-const KEY = 'psychc1000-cyberball';
+/* ═══ condition assignment ═══════════════════════════════
+   A fresh coin flip on every load. Nothing is written to the phone,
+   so reloading or reopening the page starts a new game. */
+const session = { condition: Math.random() < 0.5 ? 'inclusion' : 'exclusion' };
 
-function loadState(){
-  try { return JSON.parse(localStorage.getItem(KEY) || 'null'); }
-  catch { return null; }
-}
-function saveState(s){
-  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {}
-}
+// clear the saved state an earlier version of this page left behind
+try { localStorage.removeItem('psychc1000-cyberball'); } catch {}
 
-if (Q.has('reset')) { try { localStorage.removeItem(KEY); } catch {} }
-
-let session = loadState();
-if (!session) {
-  session = {
-    condition: Math.random() < 0.5 ? 'inclusion' : 'exclusion',
-    assigned: new Date().toISOString(),
-    done: false,
-    received: 0,
-  };
-  saveState(session);
-}
 const forced = Q.get('force');
 if (forced === 'in' || forced === 'inclusion')  session.condition = 'inclusion';
 if (forced === 'ex' || forced === 'exclusion') session.condition = 'exclusion';
@@ -606,9 +590,11 @@ function figure(pose, skin, shirt, pants, hair, flip){
   </svg>`;
 }
 
-/* The participant's own hand, cropped by the bottom of the screen.
-   Drawn as a dark silhouette with the skin pass laid over it, so the
-   fingers read as separate shapes without internal seams. */
+/* The participant's own hand, seen from the back and cropped by the
+   bottom of the screen. The thumb is hidden behind the hand — at phone
+   size it only ever read as a fifth finger. Drawn as a dark silhouette
+   with the skin pass laid over it, so the fingers stay separate shapes
+   without internal seams. */
 function handArt(pose){
   const tops = {
     idle:  [34, 18, 22, 38],
@@ -618,9 +604,8 @@ function handArt(pose){
   const tilt = pose === 'throw' ? -4 : 0;
 
   const shapes =
-    tops.map((t,i) => `<rect x="${38+i*28}" y="${t}" width="20" height="${104-t}" rx="10"/>`).join('') +
-    `<rect x="2" y="64" width="52" height="25" rx="12.5" transform="rotate(-28 28 76)"/>` +
-    `<rect x="30" y="70" width="112" height="74" rx="30"/>`;
+    tops.map((t,i) => `<rect x="${36+i*26}" y="${t}" width="20" height="${104-t}" rx="10"/>`).join('') +
+    `<path d="M29 98 Q29 72 55 72 L115 72 Q141 72 141 98 L141 140 L29 140 Z"/>`;
 
   return `<svg viewBox="0 0 170 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <g transform="rotate(${tilt} 85 140)">
@@ -698,7 +683,7 @@ function popCatch(id){
 function anchor(id){
   const r = field.getBoundingClientRect();
   const a = ANCHORS[id];
-  return { x:a.x*r.width, y:a.y*r.height };
+  return { x:a.x*r.width, y:a.y*r.height, s:a.s };
 }
 function sizeBall(){
   const r = field.getBoundingClientRect();
@@ -708,9 +693,9 @@ addEventListener('resize', sizeBall);
 addEventListener('orientationchange', () => setTimeout(sizeBall, 250));
 
 function putBall(p){
-  ball.style.transform = `translate(${p.x}px, ${p.y}px)`;
+  ball.style.transform = `translate(${p.x}px, ${p.y}px) scale(${p.s})`;
   const r = field.getBoundingClientRect();
-  shadow.style.transform = `translate(${p.x}px, ${r.height*0.86}px) scale(1)`;
+  shadow.style.transform = `translate(${p.x}px, ${r.height*0.86}px) scale(${p.s})`;
 }
 function showBall(on){
   ball.classList.toggle('show', on);
@@ -729,9 +714,11 @@ function fly(from, to, dur){
       const t = Math.min(1, (now - t0) / dur);
       const x = from.x + (to.x - from.x) * t;
       const y = from.y + (to.y - from.y) * t - 4 * arc * t * (1 - t);
-      ball.style.transform = `translate(${x}px, ${y}px) rotate(${spin*t}deg)`;
+      // grow toward the viewer, shrink away from them
+      const s = from.s + (to.s - from.s) * t;
+      ball.style.transform = `translate(${x}px, ${y}px) scale(${s}) rotate(${spin*t}deg)`;
       const lift = Math.max(0, (ground - y) / r.height);
-      shadow.style.transform = `translate(${x}px, ${ground}px) scale(${1 - lift*0.35})`;
+      shadow.style.transform = `translate(${x}px, ${ground}px) scale(${s * (1 - lift*0.35)})`;
       shadow.style.opacity = String(0.42 - lift*0.3);
       if (t < 1) requestAnimationFrame(step); else resolve();
     })(t0);
@@ -758,7 +745,7 @@ function devline(){
   $('#dev').innerHTML =
     `condition: <b>${session.condition.toUpperCase()}</b> · round: ${r.type || '—'} · ` +
     `throws: ${r.thrown || 0}/${r.total || 0} · you caught: ${r.youGot || 0}` +
-    `<a href="?reset&instructor">reset</a>` +
+    `<a href="?instructor">replay</a>` +
     `<a href="?force=in&instructor">force incl.</a>` +
     `<a href="?force=ex&instructor">force excl.</a>`;
 }
@@ -885,15 +872,14 @@ async function runMain(){
   show(null);
   await sleep(500);
   await playRound(session.condition, CONFIG.mainThrows);
-  session.done = true;
-  session.received = round.youGot;
-  saveState(session);
   await sleep(700);
   show('#s-end');
 }
 
 /* ═══ boot ═══════════════════════════════════════════════ */
 buildArt();
+$('#pL .nametag').textContent = NAMES[1];
+$('#pR .nametag').textContent = NAMES[2];
 sizeBall();
 setPose(1,'idle'); setPose(2,'idle'); setPose(0,'idle');
 upgradeArt();
@@ -912,11 +898,7 @@ once('#go-practice', () => show('#s-practice'));
 once('#go-practice-start', runPractice);
 once('#go-main', runMain);
 
-if (session.done && !Q.has('reset')) {
-  show('#s-end');
-} else {
-  show('#s-intro');
-}
+show('#s-intro');
 </script>
 </body>
 </html>

@@ -9,7 +9,7 @@ Save each result into `cyberball/img/` using the exact filename given. The page 
 files on load and swaps them in automatically.
 
 > **All three poses of a character must be present** or that character keeps its built-in art.
-> So `alex-idle.png` + `alex-hold.png` + `alex-throw.png` together, or none of them. The hand
+> So `p2-idle.png` + `p2-hold.png` + `p2-throw.png` together, or none of them. The hand
 > is its own set of three. `ball.png` is independent and can be added on its own.
 
 ---
@@ -41,13 +41,13 @@ Small drift is survivable. A character that changes size or shifts sideways is n
 >
 > **Colors:**
 > - Outlines and facial features: deep navy `#1F2233` (never pure black)
-> - Alex's shirt: violet `#6D28D9` · Alex's trousers: slate `#3C3F58`
-> - Casey's shirt: orange `#F37D26` · Casey's trousers: deep blue `#2E4057`
+> - Participant 2's shirt: violet `#6D28D9` · Participant 2's trousers: slate `#3C3F58`
+> - Participant 3's shirt: orange `#F37D26` · Participant 3's trousers: deep blue `#2E4057`
 > - Ball: warm orange `#F37D26` with a darker `#C9560F` shaded side
 >
 > **People:** simple stylized characters, roughly 4 heads tall, standing and facing the viewer.
 > Round heads, dot eyes, a small curved smile, no visible nose. Limbs are thick rounded strokes.
-> Alex and Casey should clearly be two different people — different hair and different skin
+> Participant 2 and Participant 3 should clearly be two different people — different hair and different skin
 > tone — while reading as the same set.
 >
 > **Critical technical requirements for every image:**
@@ -59,9 +59,9 @@ Small drift is survivable. A character that changes size or shifts sideways is n
 
 ---
 
-## 1. Alex — standing
+## 1. Participant 2 — standing
 
-**File:** `img/alex-idle.png` · **Portrait, roughly 2:3** · transparent
+**File:** `img/p2-idle.png` · **Portrait, roughly 2:3** · transparent
 
 > A single cartoon character standing front-on, full body, head to feet, on a fully transparent
 > background. Arms hanging down relaxed at their sides, angled slightly away from the body.
@@ -69,9 +69,9 @@ Small drift is survivable. A character that changes size or shifts sideways is n
 > sleeveless shirt, slate `#3C3F58` trousers, dark shoes. Thick `#1F2233` outlines, flat colors,
 > no background, no shadow, no text.
 
-## 2. Alex — holding the ball
+## 2. Participant 2 — holding the ball
 
-**File:** `img/alex-hold.png` · same canvas, same size, same position
+**File:** `img/p2-hold.png` · same canvas, same size, same position
 
 > Same character, same size and same position in the frame — **only the arms change.** Both arms
 > now reach down and inward so the hands meet in front of the waist, cupped as if they have just
@@ -79,9 +79,9 @@ Small drift is survivable. A character that changes size or shifts sideways is n
 > face, torso, legs, feet, scale, placement — must be pixel-identical to the previous image.
 > Transparent background, no shadow, no text.
 
-## 3. Alex — throwing
+## 3. Participant 2 — throwing
 
-**File:** `img/alex-throw.png` · same canvas, same size, same position
+**File:** `img/p2-throw.png` · same canvas, same size, same position
 
 > Same character again, same size and same position — **only the arms change.** The character's
 > left arm (the viewer's right) is raised up and outward in a throwing motion, extended above
@@ -89,19 +89,19 @@ Small drift is survivable. A character that changes size or shifts sideways is n
 > slightly out for balance. A small lean into the throw is fine, but the feet and the overall
 > footprint must not move. Transparent background, no shadow, no text.
 
-## 4–6. Casey — the same three poses
+## 4–6. Participant 3 — the same three poses
 
-**Files:** `img/casey-idle.png`, `img/casey-hold.png`, `img/casey-throw.png`
+**Files:** `img/p3-idle.png`, `img/p3-hold.png`, `img/p3-throw.png`
 
 Send the same three prompts again with these two changes:
 
-- Casey has **short textured dark hair and brown skin**, an orange `#F37D26` shirt and deep blue
+- Participant 3 has **short textured dark hair and brown skin**, an orange `#F37D26` shirt and deep blue
   `#2E4057` trousers.
-- In `casey-throw.png` the raised arm is **mirrored** — Casey's right arm (the viewer's left)
-  goes up and outward toward the upper *left*, because Casey stands on the right side of the
+- In `p3-throw.png` the raised arm is **mirrored** — Participant 3's right arm (the viewer's left)
+  goes up and outward toward the upper *left*, because Participant 3 stands on the right side of the
   screen and throws toward the middle.
 
-Casey should be recognisably a different person from Alex but unmistakably from the same set:
+Participant 3 should be recognisably a different person from Participant 2 but unmistakably from the same set:
 same height, same build, same line weight, same simple face.
 
 ---
