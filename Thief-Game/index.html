@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1020" />
+<title>The Heist &mdash; Secret Assignment</title>
+<style>
+  :root{
+    --bg:#0b1020;
+    --bg2:#141b33;
+    --card:#161d35;
+    --line:#2a3458;
+    --ink:#eef1fa;
+    --mute:#9aa6c9;
+    --gold:#e8b44a;
+    --gold-dim:#8a6a26;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(120% 90% at 50% 0%, var(--bg2) 0%, var(--bg) 60%);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;
+  }
+  .wrap{
+    flex:1;width:100%;max-width:34rem;margin:0 auto;
+    padding:max(1.25rem,env(safe-area-inset-top)) 1rem max(1.25rem,env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;justify-content:center;
+  }
+  .screen{display:none;animation:fade .35s ease both}
+  .screen.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .eyebrow{
+    font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);font-weight:700;margin:0 0 .5rem;
+  }
+  h1{font-size:2.1rem;line-height:1.1;margin:0 0 .6rem;font-weight:800;letter-spacing:-.02em}
+  h2{font-size:1.5rem;line-height:1.2;margin:0 0 .5rem;font-weight:800;letter-spacing:-.01em}
+  p{margin:0 0 .9rem;line-height:1.55;color:var(--mute);font-size:1.02rem}
+  p.lead{color:var(--ink)}
+
+  .card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:1.1rem;padding:1.25rem;margin:0 0 1rem;
+  }
+  .verdict{
+    text-align:center;padding:1.6rem 1.25rem;
+    border:1px solid var(--gold-dim);
+    background:linear-gradient(180deg,rgba(232,180,74,.10),rgba(232,180,74,.02));
+  }
+  .verdict .label{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:.45rem}
+  .verdict .role{
+    font-size:2.3rem;font-weight:900;letter-spacing:-.02em;color:var(--gold);
+    line-height:1.05;margin:0;
+  }
+  .verdict .sub{margin:.5rem 0 0;color:var(--ink);font-weight:600;font-size:1rem}
+
+  ol.steps{margin:0;padding-left:1.15rem;color:var(--ink);line-height:1.6}
+  ol.steps li{margin-bottom:.55rem}
+  ol.steps li:last-child{margin-bottom:0}
+
+  button{
+    font:inherit;width:100%;border:0;cursor:pointer;
+    border-radius:.9rem;padding:1.05rem 1rem;
+    font-weight:800;font-size:1.05rem;letter-spacing:.01em;
+    background:var(--gold);color:#241a05;
+    transition:transform .08s ease,filter .15s ease;
+  }
+  button:active{transform:scale(.985);filter:brightness(.94)}
+  button.ghost{background:transparent;color:var(--mute);border:1px solid var(--line);font-weight:600;font-size:.95rem;padding:.8rem}
+
+  .note{
+    font-size:.86rem;color:var(--mute);line-height:1.5;
+    border-left:2px solid var(--gold-dim);padding-left:.75rem;margin:1rem 0 0;
+  }
+  .shield{
+    display:flex;gap:.55rem;align-items:flex-start;
+    font-size:.88rem;color:var(--gold);font-weight:600;margin:0 0 1rem;line-height:1.45;
+  }
+  .peek{
+    text-align:center;border:1px dashed var(--line);border-radius:1.1rem;
+    padding:1.5rem 1.25rem;margin:0 0 1rem;
+  }
+  .peek .hidden-role{
+    filter:blur(13px);opacity:.55;transition:filter .18s ease,opacity .18s ease;
+    user-select:none;pointer-events:none;
+  }
+  .peek.revealed .hidden-role{filter:none;opacity:1}
+  .peek .hint{font-size:.8rem;color:var(--mute);margin:.9rem 0 0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===== 1. INTRO ===== -->
+  <section class="screen on" id="s-intro">
+    <p class="eyebrow">Classroom activity</p>
+    <h1>The Heist</h1>
+    <p class="lead">In a moment this phone will secretly assign you a role.</p>
+    <div class="note">Keep your screen to yourself. Don't blow your cover!</div>
+    <div style="height:1.25rem"></div>
+    <button id="go-role">Get my assignment</button>
+  </section>
+
+  <!-- ===== 2. ROLE ===== -->
+  <section class="screen" id="s-role">
+    <p class="shield"><span>&#128274;</span><span>Shield your screen before you read this.</span></p>
+    <div class="card verdict">
+      <div class="label">Your role</div>
+      <p class="role" id="role-word">&mdash;</p>
+      <p class="sub" id="role-sub"></p>
+    </div>
+    <div class="card">
+      <p class="eyebrow" style="margin-bottom:.7rem">Do this now</p>
+      <ol class="steps" id="role-steps"></ol>
+    </div>
+    <button id="go-told">I've done it &mdash; what do I say?</button>
+  </section>
+
+  <!-- ===== 3. STORY ===== -->
+  <section class="screen" id="s-story">
+    <p class="shield"><span>&#128274;</span><span>Shield your screen before you read this.</span></p>
+    <div class="card verdict">
+      <div class="label">When they question you</div>
+      <p class="role" id="story-word">&mdash;</p>
+      <p class="sub" id="story-sub"></p>
+    </div>
+    <button id="go-done">Got it</button>
+  </section>
+
+  <!-- ===== 4. SUMMARY ===== -->
+  <section class="screen" id="s-done">
+    <h2>You're set.</h2>
+    <p>Your assignment is hidden below. Tap and hold to check it if you forget &mdash; it blurs again the moment you let go.</p>
+    <div class="peek" id="peek">
+      <div class="hidden-role">
+        <div class="label" style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:.5rem">Role &amp; story</div>
+        <p style="font-size:1.35rem;font-weight:900;color:var(--gold);margin:0;line-height:1.25" id="peek-role">&mdash;</p>
+        <p style="margin:.6rem 0 0;color:var(--ink);font-weight:600;font-size:.98rem" id="peek-story"></p>
+      </div>
+      <p class="hint">Press and hold to reveal</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  var ROLE = {
+    thief: {
+      word: 'THIEF',
+      sub: 'You are taking a prize.',
+      steps: [
+        'Walk up to the front of the room like everyone else.',
+        'Take exactly one prize and hide it on you — pocket, bag, sleeve.',
+        'Walk back and sit down as if nothing happened.'
+      ]
+    },
+    innocent: {
+      word: 'NOT A THIEF',
+      sub: 'You are taking nothing.',
+      steps: [
+        'Walk up to the front of the room like everyone else.',
+        'Look at the prizes. Take nothing. Touch nothing.',
+        'Walk back and sit down as if nothing happened.'
+      ]
+    }
+  };
+
+  // story text depends on BOTH assignments
+  var STORY = {
+    'thief|honest': {
+      word: 'TELL THE TRUTH',
+      sub: 'Admit that you took a prize.'
+    },
+    'thief|lie': {
+      word: 'LIE',
+      sub: 'Deny that you took anything.'
+    },
+    'innocent|honest': {
+      word: 'TELL THE TRUTH',
+      sub: 'Say that you took nothing.'
+    },
+    'innocent|lie': {
+      word: 'LIE',
+      sub: 'Claim that you took a prize.'
+    }
+  };
+
+  function coin(){
+    // crypto-backed so two phones side by side don't correlate
+    try {
+      var a = new Uint8Array(1);
+      crypto.getRandomValues(a);
+      return a[0] < 128;
+    } catch(e){ return Math.random() < 0.5; }
+  }
+
+  // Nothing is stored: every page load is a brand new game, back at the
+  // intro with a brand new assignment.
+  var state = { role: coin() ? 'thief' : 'innocent', story: coin() ? 'honest' : 'lie' };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  function list(el, items){
+    el.innerHTML = '';
+    items.forEach(function(t){
+      var li = document.createElement('li');
+      li.textContent = t;
+      el.appendChild(li);
+    });
+  }
+
+  function paint(){
+    var r = ROLE[state.role];
+    var s = STORY[state.role + '|' + state.story];
+
+    $('role-word').textContent = r.word;
+    $('role-sub').textContent  = r.sub;
+    list($('role-steps'), r.steps);
+
+    $('story-word').textContent = s.word;
+    $('story-sub').textContent  = s.sub;
+
+    $('peek-role').textContent  = r.word;
+    $('peek-story').textContent = s.sub;
+  }
+
+  function show(step){
+    ['intro','role','story','done'].forEach(function(k){
+      $('s-' + k).classList.toggle('on', k === step);
+    });
+    window.scrollTo(0,0);
+  }
+
+  paint();
+  show('intro');
+
+  $('go-role').addEventListener('click',  function(){ show('role'); });
+  $('go-told').addEventListener('click',  function(){ show('story'); });
+  $('go-done').addEventListener('click',  function(){ show('done'); });
+
+  // press-and-hold peek
+  var peek = $('peek');
+  function on(){ peek.classList.add('revealed'); }
+  function off(){ peek.classList.remove('revealed'); }
+  ['mousedown','touchstart','pointerdown'].forEach(function(e){
+    peek.addEventListener(e, function(ev){ ev.preventDefault(); on(); }, {passive:false});
+  });
+  ['mouseup','mouseleave','touchend','touchcancel','pointerup','pointercancel'].forEach(function(e){
+    peek.addEventListener(e, off);
+  });
+})();
+</script>
+</body>
+</html>
