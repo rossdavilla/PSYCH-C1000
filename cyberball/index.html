@@ -528,15 +528,31 @@ if (DEV) document.body.classList.add('dev');
 
 /* ═══ condition assignment ═══════════════════════════════
    A fresh coin flip on every load. Nothing is written to the phone,
-   so reloading or reopening the page starts a new game. */
-const session = { condition: Math.random() < 0.5 ? 'inclusion' : 'exclusion' };
+   so reloading or reopening the page starts a new game.
+
+   cyberball-same.html is a byte-for-byte copy of this file. It is
+   recognised by its own filename and skips the coin flip: everyone
+   who opens it is excluded. Because the two files are identical,
+   changes made here reach it with `cp index.html cyberball-same.html`
+   — there is no second version to keep in step. */
+const EVERYONE_EXCLUDED = /-same\.html$/i.test(location.pathname);
+
+const session = {
+  condition: EVERYONE_EXCLUDED
+    ? 'exclusion'
+    : (Math.random() < 0.5 ? 'inclusion' : 'exclusion'),
+};
 
 // clear the saved state an earlier version of this page left behind
 try { localStorage.removeItem('psychc1000-cyberball'); } catch {}
 
-const forced = Q.get('force');
-if (forced === 'in' || forced === 'inclusion')  session.condition = 'inclusion';
-if (forced === 'ex' || forced === 'exclusion') session.condition = 'exclusion';
+// ?force is an instructor tool on the main page; on the -same copy the
+// condition is fixed and the parameter is ignored.
+if (!EVERYONE_EXCLUDED) {
+  const forced = Q.get('force');
+  if (forced === 'in' || forced === 'inclusion') session.condition = 'inclusion';
+  if (forced === 'ex' || forced === 'exclusion') session.condition = 'exclusion';
+}
 
 /* ═══ built-in art ═══════════════════════════════════════ */
 /* Each limb is stroked twice — a fatter ink pass, then the colour
@@ -718,11 +734,14 @@ function devline(){
   if (!DEV) return;
   const r = round || {};
   $('#dev').innerHTML =
-    `condition: <b>${session.condition.toUpperCase()}</b> · round: ${r.type || '—'} · ` +
+    `condition: <b>${session.condition.toUpperCase()}</b>` +
+    (EVERYONE_EXCLUDED ? ' (fixed — everyone excluded)' : '') +
+    ` · round: ${r.type || '—'} · ` +
     `throws: ${r.thrown || 0}/${r.total || 0} · you caught: ${r.youGot || 0}` +
     `<a href="?instructor">replay</a>` +
-    `<a href="?force=in&instructor">force incl.</a>` +
-    `<a href="?force=ex&instructor">force excl.</a>`;
+    (EVERYONE_EXCLUDED ? '' :
+      `<a href="?force=in&instructor">force incl.</a>` +
+      `<a href="?force=ex&instructor">force excl.</a>`);
 }
 
 /* ═══ the round engine ═══════════════════════════════════ */

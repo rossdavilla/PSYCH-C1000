@@ -30,6 +30,28 @@ Assignment is a fresh 50/50 coin flip every time the page loads.
 | **Inclusion** | Each computer player passes at random between the other two, so the student receives about **1 in 3** throws (≈7 of 20), spread over the whole round. A safety net forces a throw to them if they have been skipped 5 times in a row. |
 | **Exclusion** | The student receives the **1st and 3rd** computer throws, then never again. The other two throw only to each other for the remaining ~16 passes. |
 
+## The everyone-excluded copy
+
+`cyberball-same.html` is the same game with the coin flip removed: **everyone who opens it is
+excluded.** Use it when you want the whole room to have the rejection experience rather than
+half of it — for example when the comparison is between the class and something else, or when
+you want every student to be able to answer "how did that feel?" from the same place.
+
+It is a byte-for-byte copy of `index.html`. The page recognises its own filename and fixes the
+condition from that, which is why there is no second version of the game to keep in step.
+
+> **After any change to `index.html`, refresh the copy:**
+>
+> ```
+> cp index.html cyberball-same.html
+> ```
+>
+> `diff index.html cyberball-same.html` should print nothing. If it prints anything, the copy is
+> stale.
+
+`?force=in` and `?force=ex` are ignored on this page — the condition is fixed. Everything else
+(the practice round, the cover story, replaying on reload, `?instructor`) behaves identically.
+
 ## Replaying
 
 The game is replayable: reload the page and you get a new round and a new coin flip. Nothing is
@@ -57,7 +79,8 @@ Add these to the end of the page URL:
 Combine them with `&`, e.g. `cyberball/?force=ex&instructor`.
 
 Handy for demoing both conditions on the projector: open `?force=in` on one device and
-`?force=ex` on another.
+`?force=ex` on another. On `cyberball-same.html` the two `?force` values are ignored, since the
+condition there is fixed.
 
 ## A note on the cover story
 
