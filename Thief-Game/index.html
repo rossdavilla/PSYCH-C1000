@@ -123,13 +123,12 @@
     <button id="go-told">I've done it &mdash; what do I say?</button>
   </section>
 
-  <!-- ===== 3. STORY ===== -->
+  <!-- ===== 3. YOUR LINE (same for everyone) ===== -->
   <section class="screen" id="s-story">
-    <p class="shield"><span>&#128274;</span><span>Shield your screen before you read this.</span></p>
     <div class="card verdict">
       <div class="label">When they question you</div>
-      <p class="role" id="story-word">&mdash;</p>
-      <p class="sub" id="story-sub"></p>
+      <p class="role">DENY IT</p>
+      <p class="sub">Whatever just happened, tell them you took nothing.</p>
     </div>
     <button id="go-done">Got it</button>
   </section>
@@ -142,7 +141,7 @@
       <div class="hidden-role">
         <div class="label" style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:.5rem">Role &amp; story</div>
         <p style="font-size:1.35rem;font-weight:900;color:var(--gold);margin:0;line-height:1.25" id="peek-role">&mdash;</p>
-        <p style="margin:.6rem 0 0;color:var(--ink);font-weight:600;font-size:.98rem" id="peek-story"></p>
+        <p style="margin:.6rem 0 0;color:var(--ink);font-weight:600;font-size:.98rem">You told them you took nothing.</p>
       </div>
       <p class="hint">Press and hold to reveal</p>
     </div>
@@ -173,26 +172,6 @@
     }
   };
 
-  // story text depends on BOTH assignments
-  var STORY = {
-    'thief|honest': {
-      word: 'TELL THE TRUTH',
-      sub: 'Admit that you took a prize.'
-    },
-    'thief|lie': {
-      word: 'LIE',
-      sub: 'Deny that you took anything.'
-    },
-    'innocent|honest': {
-      word: 'TELL THE TRUTH',
-      sub: 'Say that you took nothing.'
-    },
-    'innocent|lie': {
-      word: 'LIE',
-      sub: 'Claim that you took a prize.'
-    }
-  };
-
   function coin(){
     // crypto-backed so two phones side by side don't correlate
     try {
@@ -204,7 +183,7 @@
 
   // Nothing is stored: every page load is a brand new game, back at the
   // intro with a brand new assignment.
-  var state = { role: coin() ? 'thief' : 'innocent', story: coin() ? 'honest' : 'lie' };
+  var state = { role: coin() ? 'thief' : 'innocent' };
 
   var $ = function(id){ return document.getElementById(id); };
 
@@ -219,17 +198,10 @@
 
   function paint(){
     var r = ROLE[state.role];
-    var s = STORY[state.role + '|' + state.story];
-
     $('role-word').textContent = r.word;
     $('role-sub').textContent  = r.sub;
     list($('role-steps'), r.steps);
-
-    $('story-word').textContent = s.word;
-    $('story-sub').textContent  = s.sub;
-
-    $('peek-role').textContent  = r.word;
-    $('peek-story').textContent = s.sub;
+    $('peek-role').textContent = r.word;
   }
 
   function show(step){
