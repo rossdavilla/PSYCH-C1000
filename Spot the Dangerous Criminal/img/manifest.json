@@ -1,0 +1,128 @@
+[
+ {
+  "id": "p01",
+  "source": "drug charge 1.png",
+  "violent": false,
+  "upscale": 1.05
+ },
+ {
+  "id": "p02",
+  "source": "drug charge 10.png",
+  "violent": false,
+  "upscale": 1.36
+ },
+ {
+  "id": "p03",
+  "source": "drug charge 11.png",
+  "violent": false,
+  "upscale": 1.55
+ },
+ {
+  "id": "p04",
+  "source": "drug charge 12.png",
+  "violent": false,
+  "upscale": 2.01
+ },
+ {
+  "id": "p05",
+  "source": "drug charge 13.png",
+  "violent": false,
+  "upscale": 2.23
+ },
+ {
+  "id": "p06",
+  "source": "drug charge 14.png",
+  "violent": false,
+  "upscale": 2.99
+ },
+ {
+  "id": "p07",
+  "source": "drug charge 2.png",
+  "violent": false,
+  "upscale": 1.2
+ },
+ {
+  "id": "p08",
+  "source": "drug charge 3.png",
+  "violent": false,
+  "upscale": 1.0
+ },
+ {
+  "id": "p09",
+  "source": "drug charge 4.png",
+  "violent": false,
+  "upscale": 1.0
+ },
+ {
+  "id": "p10",
+  "source": "drug charge 5.png",
+  "violent": false,
+  "upscale": 2.49
+ },
+ {
+  "id": "p11",
+  "source": "drug charge 6.png",
+  "violent": false,
+  "upscale": 3.24
+ },
+ {
+  "id": "p12",
+  "source": "drug charge 7.png",
+  "violent": false,
+  "upscale": 2.53
+ },
+ {
+  "id": "p13",
+  "source": "drug charge 8.png",
+  "violent": false,
+  "upscale": 2.46
+ },
+ {
+  "id": "p14",
+  "source": "drug charge 9.png",
+  "violent": false,
+  "upscale": 1.43
+ },
+ {
+  "id": "p15",
+  "source": "rapist 2.webp",
+  "violent": true,
+  "upscale": 1.0
+ },
+ {
+  "id": "p16",
+  "source": "violent 1.webp",
+  "violent": true,
+  "upscale": 1.08
+ },
+ {
+  "id": "p17",
+  "source": "violent 3.jpeg",
+  "violent": true,
+  "upscale": 1.06
+ },
+ {
+  "id": "p18",
+  "source": "violent 4.webp",
+  "violent": true,
+  "upscale": 1.58
+ },
+ {
+  "id": "p19",
+  "source": "violent 5.jpeg",
+  "violent": true,
+  "upscale": 1.0
+ },
+ {
+  "id": "p20",
+  "source": "violent 6.jxl",
+  "violent": true,
+  "upscale": 1.78
+ },
+ {
+  "id": "p21",
+  "source": "violent 7.avif",
+  "violent": true,
+  "upscale": 1.31
+ }
+]

@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=720">
+<title>Spot the Dangerous Criminal</title>
+<style>
+  :root {
+    --bg:      #15181d;
+    --panel:   #1e232b;
+    --line:    #2e3540;
+    --ink:     #e8ecf1;
+    --muted:   #949fad;
+    --accent:  #5b9dd9;
+    --bad:     #d9534f;
+    --good:    #4c9a6a;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+
+  #stage {
+    position: relative;
+    width: 720px;
+    height: 450px;
+    overflow: hidden;
+    background: var(--bg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .screen { display: none; flex: 1; flex-direction: column; min-height: 0; }
+  .screen.on { display: flex; }
+
+  /* ---------- start ---------- */
+
+  #start { align-items: center; justify-content: center; text-align: center; gap: 14px; }
+
+  #start h1 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  #start p {
+    margin: 0;
+    max-width: 480px;
+    color: var(--muted);
+    font-size: 14.5px;
+  }
+
+  .btn {
+    appearance: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #0f1318;
+    font: inherit;
+    font-weight: 600;
+    padding: 9px 22px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .btn:hover { filter: brightness(1.1); }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .fineprint { font-size: 12px; color: #6d7786; max-width: 500px; }
+
+  /* ---------- play ---------- */
+
+  #play { gap: 10px; }
+
+  #bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+
+  #bar strong { color: var(--ink); font-weight: 600; }
+
+  #prompt { font-size: 16px; font-weight: 600; text-align: center; }
+
+  #cards { display: flex; gap: 12px; }
+
+  .card {
+    position: relative;
+    flex: 1;
+    padding: 0;
+    border: 2px solid var(--line);
+    border-radius: 7px;
+    background: var(--panel);
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .12s, transform .12s;
+  }
+
+  .card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    background: #8a8d8f;
+  }
+
+  #cards.live .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  #cards.locked .card { cursor: default; }
+
+  .key {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: rgba(10, 13, 17, .68);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+  }
+
+  .tag {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 4px 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    text-align: center;
+    color: #fff;
+    opacity: 0;
+    transition: opacity .18s;
+  }
+
+  .card.revealed .tag { opacity: 1; }
+  .card.violent { border-color: var(--bad); }
+  .card.violent .tag { background: var(--bad); }
+  .card.nonviolent .tag { background: #46505d; }
+  .card.dim img { opacity: .4; }
+  .card.picked { border-color: var(--ink); }
+
+  #foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 40px;
+  }
+
+  #verdict { font-size: 14px; }
+  #verdict b { font-weight: 700; }
+  #verdict.hit b { color: #7cc79b; }
+  #verdict.miss b { color: #e8837f; }
+
+  /* ---------- end ---------- */
+
+  #end { align-items: center; justify-content: center; gap: 16px; }
+
+  #tally .big {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  #chart { display: flex; gap: 8px; }
+
+  #yaxis {
+    position: relative;
+    width: 16px;
+    height: 252px;
+  }
+
+  #yaxis span {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-size: 11px;
+    color: #6d7786;
+    line-height: 1;
+  }
+
+  #plot {
+    position: relative;
+    width: 340px;
+    height: 252px;
+    border-left: 1px solid var(--line);
+    border-bottom: 1px solid #46505d;
+  }
+
+  .gridline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  #bars {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+  }
+
+  .bar {
+    position: relative;
+    width: 86px;
+    height: 0;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s cubic-bezier(.22, .9, .3, 1);
+  }
+
+  .bar.you    { background: linear-gradient(180deg, #6fb0e8, var(--accent)); }
+  .bar.chance { background: #46505d; }
+
+  .bar .val {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .35s .75s;
+  }
+
+  .bar.shown .val { opacity: 1; }
+  .bar.chance .val { color: var(--muted); }
+
+  /* a full-height bar has no room above it, so the value moves inside */
+  .bar.tall .val { bottom: auto; top: 6px; color: #10212f; }
+
+  #xlabels {
+    display: flex;
+    justify-content: space-around;
+    width: 340px;
+    margin-left: 24px;
+    padding-top: 7px;
+    font-size: 12.5px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+
+  #xlabels span { width: 86px; text-align: center; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ---------- start ---------- -->
+  <section id="start" class="screen on">
+    <h1>Spot the Dangerous Criminal</h1>
+    <p>
+      You'll see three booking photographs at a time. One of these three men was convicted of a
+      <strong>violent</strong> offense. The other two were convicted of <strong>drug</strong> offenses.
+      Pick the violent one. Seven rounds.
+    </p>
+    <button class="btn" id="begin">Begin</button>
+    <p class="fineprint">
+      Real booking photographs, public record. Used here to examine how we judge faces.
+    </p>
+  </section>
+
+  <!-- ---------- play ---------- -->
+  <section id="play" class="screen">
+    <div id="bar">
+      <span>Round <strong id="roundNo">1</strong> of <strong id="roundTotal">7</strong></span>
+      <span>Correct: <strong id="score">0</strong></span>
+    </div>
+
+    <div id="prompt">Which one was convicted of a violent offense?</div>
+
+    <div id="cards"></div>
+
+    <div id="foot">
+      <div id="verdict"></div>
+      <button class="btn" id="next" hidden>Next</button>
+    </div>
+  </section>
+
+  <!-- ---------- end ---------- -->
+  <section id="end" class="screen">
+    <div id="tally">
+      <span class="big"><span id="finalScore">0</span> / <span id="finalTotal">7</span></span>
+    </div>
+
+    <div id="chart">
+      <div id="yaxis"></div>
+      <div id="plot">
+        <div id="bars">
+          <div class="bar you" id="youBar"><span class="val" id="youVal"></span></div>
+          <div class="bar chance" id="chanceBar"><span class="val" id="chanceVal"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="xlabels"><span>You</span><span>Chance</span></div>
+
+    <button class="btn" id="again">Play again</button>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var DIR    = "img/faces/";
+  var ROUNDS = 7;
+  var PLOT_H = 252;   // px; must match #plot height in the stylesheet
+
+  // p01-p14 are drug (non-violent) convictions, p15-p21 are violent convictions.
+  var NONVIOLENT = ["p01","p02","p03","p04","p05","p06","p07",
+                    "p08","p09","p10","p11","p12","p13","p14"];
+  var VIOLENT    = ["p15","p16","p17","p18","p19","p20","p21"];
+
+  var el = function (id) { return document.getElementById(id); };
+
+  var cardsBox = el("cards");
+  var verdict  = el("verdict");
+  var nextBtn  = el("next");
+
+  var deck = [];      // the 7 rounds for this playthrough
+  var round = 0;      // index into deck
+  var score = 0;
+  var locked = false; // true once an answer is in
+
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // Each violent face is used once; the 14 non-violent faces fill the other two
+  // slots, so no face repeats within a playthrough.
+  function buildDeck() {
+    var vs = shuffle(VIOLENT);
+    var ns = shuffle(NONVIOLENT);
+    var out = [];
+    for (var i = 0; i < ROUNDS; i++) {
+      out.push(shuffle([
+        { id: vs[i],        violent: true  },
+        { id: ns[i * 2],    violent: false },
+        { id: ns[i * 2 + 1], violent: false }
+      ]));
+    }
+    return out;
+  }
+
+  function preload(ids) {
+    ids.forEach(function (id) { (new Image()).src = DIR + id + ".jpg"; });
+  }
+
+  function show(name) {
+    ["start", "play", "end"].forEach(function (s) {
+      el(s).classList.toggle("on", s === name);
+    });
+  }
+
+  function renderRound() {
+    locked = false;
+    verdict.textContent = "";
+    verdict.className = "";
+    nextBtn.hidden = true;
+    el("roundNo").textContent = round + 1;
+    el("score").textContent = score;
+
+    cardsBox.className = "live";
+    cardsBox.innerHTML = "";
+
+    deck[round].forEach(function (face, i) {
+      var b = document.createElement("button");
+      b.className = "card";
+      b.type = "button";
+      b.setAttribute("aria-label", "Photograph " + (i + 1));
+
+      var img = document.createElement("img");
+      img.src = DIR + face.id + ".jpg";
+      img.alt = "Booking photograph " + (i + 1);
+      b.appendChild(img);
+
+      var key = document.createElement("span");
+      key.className = "key";
+      key.textContent = i + 1;
+      b.appendChild(key);
+
+      var tag = document.createElement("span");
+      tag.className = "tag";
+      tag.textContent = face.violent ? "Violent offense" : "Drug offense";
+      b.appendChild(tag);
+
+      b.addEventListener("click", function () { choose(i); });
+      cardsBox.appendChild(b);
+    });
+
+    // keep the next round's images warm
+    if (deck[round + 1]) {
+      preload(deck[round + 1].map(function (f) { return f.id; }));
+    }
+  }
+
+  function choose(i) {
+    if (locked) { return; }
+    locked = true;
+
+    var faces = deck[round];
+    var right = faces[i].violent;
+    if (right) { score++; }
+
+    cardsBox.className = "locked";
+    var nodes = cardsBox.children;
+    for (var k = 0; k < nodes.length; k++) {
+      nodes[k].classList.add("revealed");
+      nodes[k].classList.add(faces[k].violent ? "violent" : "nonviolent");
+      if (k === i) { nodes[k].classList.add("picked"); }
+      else if (!faces[k].violent) { nodes[k].classList.add("dim"); }
+    }
+
+    el("score").textContent = score;
+    verdict.className = right ? "hit" : "miss";
+    verdict.innerHTML = right
+      ? "<b>Correct.</b> That was the violent offender."
+      : "<b>Not quite.</b> The violent offender is outlined in red.";
+
+    nextBtn.textContent = (round + 1 < ROUNDS) ? "Next" : "See results";
+    nextBtn.hidden = false;
+    nextBtn.focus();
+  }
+
+  function advance() {
+    round++;
+    if (round < ROUNDS) { renderRound(); }
+    else { finish(); }
+  }
+
+  // Draw the 0-7 gridlines and their y-axis labels once.
+  function buildAxis() {
+    var plot = el("plot"), yaxis = el("yaxis");
+    for (var v = 0; v <= ROUNDS; v++) {
+      var y = (v / ROUNDS) * PLOT_H;
+
+      var line = document.createElement("div");
+      line.className = "gridline";
+      line.style.bottom = y + "px";
+      plot.insertBefore(line, plot.firstChild);   // keep the gridlines behind the bars
+
+      var lab = document.createElement("span");
+      lab.textContent = v;
+      lab.style.bottom = y + "px";
+      yaxis.appendChild(lab);
+    }
+  }
+
+  function countTo(node, target, ms) {
+    var t0 = null;
+    function step(t) {
+      if (t0 === null) { t0 = t; }
+      var p = Math.min(1, (t - t0) / ms);
+      node.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) { requestAnimationFrame(step); }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finish() {
+    var expected = ROUNDS / 3;                 // 2.3 by pure guessing
+    var you = el("youBar"), chance = el("chanceBar");
+
+    el("finalTotal").textContent = ROUNDS;
+    el("finalScore").textContent = "0";
+    el("youVal").textContent = score;
+    el("chanceVal").textContent = expected.toFixed(1);
+
+    // reset, then grow on the next frame so the transition actually runs
+    you.style.height = "0px";
+    chance.style.height = "0px";
+    you.classList.remove("shown");
+    chance.classList.remove("shown");
+    you.classList.toggle("tall", score / ROUNDS > 0.95);
+
+    show("end");
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        you.style.height = (score / ROUNDS * PLOT_H) + "px";
+        chance.style.height = (expected / ROUNDS * PLOT_H) + "px";
+        you.classList.add("shown");
+        chance.classList.add("shown");
+        countTo(el("finalScore"), score, 1000);
+      });
+    });
+
+    el("again").focus();
+  }
+
+  function start() {
+    deck  = buildDeck();
+    round = 0;
+    score = 0;
+    el("roundTotal").textContent = ROUNDS;
+    preload(deck[0].map(function (f) { return f.id; }));
+    show("play");
+    renderRound();
+  }
+
+  buildAxis();
+
+  el("begin").addEventListener("click", start);
+  el("again").addEventListener("click", start);
+  nextBtn.addEventListener("click", advance);
+
+  document.addEventListener("keydown", function (e) {
+    if (!el("play").classList.contains("on")) { return; }
+    if (e.key === "1" || e.key === "2" || e.key === "3") {
+      choose(Number(e.key) - 1);
+    } else if ((e.key === "Enter" || e.key === " ") && !nextBtn.hidden) {
+      e.preventDefault();
+      advance();
+    }
+  });
+})();
+</script>
+</body>
+</html>
