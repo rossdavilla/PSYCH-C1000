@@ -30,27 +30,49 @@ Assignment is a fresh 50/50 coin flip every time the page loads.
 | **Inclusion** | Each computer player passes at random between the other two, so the student receives about **1 in 3** throws (≈7 of 20), spread over the whole round. A safety net forces a throw to them if they have been skipped 5 times in a row. |
 | **Exclusion** | The student receives the **1st and 3rd** computer throws, then never again. The other two throw only to each other for the remaining ~16 passes. |
 
-## The everyone-excluded copy
+## The variant pages
 
-`cyberball-same.html` is the same game with the coin flip removed: **everyone who opens it is
-excluded.** Use it when you want the whole room to have the rejection experience rather than
-half of it — for example when the comparison is between the class and something else, or when
-you want every student to be able to answer "how did that feel?" from the same place.
+| Page | Condition | Practice round |
+|---|---|---|
+| `index.html` | random 50/50 | yes |
+| `cyberball-same.html` | everyone excluded | yes |
+| `cyberball-rejection-nopractice.html` | everyone excluded | **no** |
 
-It is a byte-for-byte copy of `index.html`. The page recognises its own filename and fixes the
-condition from that, which is why there is no second version of the game to keep in step.
+**`cyberball-same.html`** — the same game with the coin flip removed. Use it when you want the
+whole room to have the rejection experience rather than half of it.
 
-> **After any change to `index.html`, refresh the copy:**
+**`cyberball-rejection-nopractice.html`** — everyone excluded and no warm-up, so it goes intro →
+how to play → the real round. Built as a demo to hand to other teachers: about a minute, and
+everyone who tries it feels the thing the paradigm is about. The second screen still teaches the
+one control ("when you catch the ball, tap the player you want to throw it to") and the tap hint
+reappears each time they hold the ball, since there is no practice round to learn it in.
+
+`?force=in` and `?force=ex` are ignored on both — the condition there is fixed. Everything else
+(the cover story, replaying on reload, `?instructor`) behaves identically.
+
+### How the variants work
+
+Each one is a **byte-for-byte copy of `index.html`**. The page reads its own filename and turns
+parts of the game off from that, so there is only ever one version of the game to maintain:
+
+| Filename contains | Effect |
+|---|---|
+| `-same.html` | everyone is excluded |
+| `rejection` | everyone is excluded |
+| `nopractice` | no warm-up round |
+
+Those rules compose, so a new variant is a `cp` with the right name — no code change.
+
+> **After any change to `index.html`, refresh the copies:**
 >
 > ```
+> cd cyberball
 > cp index.html cyberball-same.html
+> cp index.html cyberball-rejection-nopractice.html
 > ```
 >
-> `diff index.html cyberball-same.html` should print nothing. If it prints anything, the copy is
-> stale.
-
-`?force=in` and `?force=ex` are ignored on this page — the condition is fixed. Everything else
-(the practice round, the cover story, replaying on reload, `?instructor`) behaves identically.
+> Check with `diff index.html cyberball-same.html` — it should print nothing. Anything printed
+> means that copy is stale.
 
 ## Replaying
 
@@ -79,7 +101,7 @@ Add these to the end of the page URL:
 Combine them with `&`, e.g. `cyberball/?force=ex&instructor`.
 
 Handy for demoing both conditions on the projector: open `?force=in` on one device and
-`?force=ex` on another. On `cyberball-same.html` the two `?force` values are ignored, since the
+`?force=ex` on another. On the variant pages the two `?force` values are ignored, since the
 condition there is fixed.
 
 ## A note on the cover story

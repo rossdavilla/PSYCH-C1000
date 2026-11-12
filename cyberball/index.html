@@ -530,12 +530,18 @@ if (DEV) document.body.classList.add('dev');
    A fresh coin flip on every load. Nothing is written to the phone,
    so reloading or reopening the page starts a new game.
 
-   cyberball-same.html is a byte-for-byte copy of this file. It is
-   recognised by its own filename and skips the coin flip: everyone
-   who opens it is excluded. Because the two files are identical,
-   changes made here reach it with `cp index.html cyberball-same.html`
-   — there is no second version to keep in step. */
-const EVERYONE_EXCLUDED = /-same\.html$/i.test(location.pathname);
+   The variant pages are byte-for-byte copies of this file. Each one
+   reads its own filename and turns parts of the game off, so there is
+   only ever one version of the game to maintain:
+
+     ...-same.html          everyone is excluded
+     ...rejection...        everyone is excluded
+     ...nopractice...       no warm-up round
+
+   See README.md for how to refresh the copies after a change. */
+const PAGE = location.pathname.toLowerCase();
+const EVERYONE_EXCLUDED = /-same\.html$|rejection/.test(PAGE);
+const SKIP_PRACTICE     = /nopractice/.test(PAGE);
 
 const session = {
   condition: EVERYONE_EXCLUDED
@@ -779,7 +785,8 @@ function armPlayer(){
     document.body.classList.add('armed');
     $$('.tapzone').forEach(z => z.addEventListener('click', onTap));
 
-    if (round.type === 'practice') say('Tap a player to pass the ball');
+    // with no warm-up round, the hint is the only teaching the student gets
+    if (round.type === 'practice' || SKIP_PRACTICE) say('Tap a player to pass the ball');
     const nudge = setTimeout(() => say('Tap a player to pass the ball'), CONFIG.nudgeAfter);
     const auto  = setTimeout(() => finish(Math.random() < 0.5 ? 1 : 2), CONFIG.playerTimeout);
   });
@@ -844,6 +851,7 @@ function show(id){
 }
 
 async function runPractice(){
+  if (SKIP_PRACTICE) { await runConnect(); return; }
   show(null);
   await sleep(450);
   await playRound('practice', CONFIG.practiceThrows);
@@ -877,6 +885,18 @@ buildArt();
 $('#pL .nametag').textContent = NAMES[1];
 $('#pR .nametag').textContent = NAMES[2];
 sizeBall();
+
+/* With no warm-up, the second screen still has to teach the one control,
+   so it turns from "a quick practice" into "how to play". */
+if (SKIP_PRACTICE) {
+  const s = $('#s-practice');
+  const p = s.querySelectorAll('p:not(.eyebrow)');
+  s.querySelector('.eyebrow').textContent = 'Before you start';
+  s.querySelector('h1').textContent = 'How to play';
+  p[0].textContent = "You'll pass a ball back and forth with the two other players.";
+  p[1].innerHTML = '<strong>When you catch the ball, tap the player you want to throw it to.</strong>';
+  $('#s-connect .eyebrow').textContent = 'Ready';
+}
 setPose(1,'idle'); setPose(2,'idle'); setPose(0,'idle');
 upgradeArt();
 devline();
