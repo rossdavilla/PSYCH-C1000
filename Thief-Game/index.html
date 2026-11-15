@@ -123,12 +123,12 @@
     <button id="go-told">I've done it &mdash; what do I say?</button>
   </section>
 
-  <!-- ===== 3. YOUR LINE (same for everyone) ===== -->
+  <!-- ===== 3. YOUR LINE (thief: deny it / not a thief: tell the truth) ===== -->
   <section class="screen" id="s-story">
     <div class="card verdict">
       <div class="label">When they question you</div>
-      <p class="role">DENY IT</p>
-      <p class="sub">Whatever just happened, tell them you took nothing.</p>
+      <p class="role" id="story-word">&mdash;</p>
+      <p class="sub" id="story-sub"></p>
     </div>
     <button id="go-done">Got it</button>
   </section>
@@ -141,7 +141,7 @@
       <div class="hidden-role">
         <div class="label" style="font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:.5rem">Role &amp; story</div>
         <p style="font-size:1.35rem;font-weight:900;color:var(--gold);margin:0;line-height:1.25" id="peek-role">&mdash;</p>
-        <p style="margin:.6rem 0 0;color:var(--ink);font-weight:600;font-size:.98rem">You told them you took nothing.</p>
+        <p style="margin:.6rem 0 0;color:var(--ink);font-weight:600;font-size:.98rem" id="peek-story"></p>
       </div>
       <p class="hint">Press and hold to reveal</p>
     </div>
@@ -159,7 +159,10 @@
         'Walk up to the front of the room like everyone else.',
         'Take exactly one prize and hide it on you — pocket, bag, sleeve.',
         'Walk back and sit down as if nothing happened.'
-      ]
+      ],
+      storyWord: 'DENY IT',
+      storySub: 'Lie: tell them you took nothing.',
+      peekStory: 'Deny it: say you took nothing.'
     },
     innocent: {
       word: 'NOT A THIEF',
@@ -168,7 +171,10 @@
         'Walk up to the front of the room like everyone else.',
         'Look at the prizes. Take nothing. Touch nothing.',
         'Walk back and sit down as if nothing happened.'
-      ]
+      ],
+      storyWord: 'TELL THE TRUTH',
+      storySub: 'Honestly tell them you took nothing, because you didn’t.',
+      peekStory: 'Tell the truth: say you took nothing.'
     }
   };
 
@@ -202,6 +208,9 @@
     $('role-sub').textContent  = r.sub;
     list($('role-steps'), r.steps);
     $('peek-role').textContent = r.word;
+    $('story-word').textContent = r.storyWord;
+    $('story-sub').textContent  = r.storySub;
+    $('peek-story').textContent = r.peekStory;
   }
 
   function show(step){
