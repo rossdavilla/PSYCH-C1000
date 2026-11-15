@@ -137,13 +137,14 @@ const CONFIG = {
 
 `NAMES` sets the two players' labels.
 
-`ANCHORS` sets where the ball sits for each player: `x` and `y` as a fraction of the screen, and
-`s`, the size the ball takes there. The two players sit at `s: 0.85` and the student's own hand
-at `s: 1.70` — exactly double — so the ball doubles in size as it comes toward them and halves as
-it goes away, which is what sells the perspective. It interpolates between the two ends in
-flight, and a throw between the two players stays one size, since they are at the same depth.
-Nudge `x`/`y` if you swap in illustrated art and the ball doesn't quite land in the hands; nudge
-`s` to dial the perspective up or down.
+`HAND_SPOT` sets where the ball sits for each player: `x` and `y` as a fraction of **that
+character's own picture**, not of the screen, so the same numbers work in both orientations and
+survive a change of artwork. `s` is the size the ball takes there. The two players sit at
+`s: 0.85` and the student's own hand at `s: 1.70` — exactly double — so the ball doubles in size
+as it comes toward them and halves as it goes away, which is what sells the perspective. It
+interpolates between the two ends in flight, and a throw between the two players stays one size,
+since they are at the same depth. Nudge `x`/`y` only if the ball misses the hands in the
+illustrated art; nudge `s` to dial the perspective up or down.
 
 ## Artwork
 
@@ -162,9 +163,17 @@ should be that closed fist.
 
 ## Phones
 
-Landscape only; a portrait phone gets a "turn your phone sideways" screen. Tapping anywhere on
-the left or right half of the screen passes to that side, so it works with a thumb on either
-hand. The phone gives a short vibration when the student catches the ball.
+Works held either way, and switches live when the phone is rotated mid-game. Landscape puts the
+two players out to the sides; portrait stands them nearer the middle, smaller and higher, so the
+long throw runs up and down the screen. Tapping anywhere on the left or right half passes to that
+side, so it works with a thumb on either hand. The phone gives a short vibration when the student
+catches the ball.
+
+The orientation layouts are the `--p-x` / `--p-top` / `--p-h` / `--hand-h` variables at the top of
+the stylesheet, with a portrait block overriding them. The ball's landing spots are **not** in
+there: `HAND_SPOT` gives them as a fraction of each character's own picture, and they are measured
+off the live element each throw. So moving a character moves the ball with it, in both
+orientations and with illustrated art — there is nothing to re-tune by hand.
 
 If a student switches apps mid-game the animation pauses and picks up where it left off when
 they come back.

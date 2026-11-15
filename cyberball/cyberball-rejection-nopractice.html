@@ -28,6 +28,34 @@
   --ink:#1F2233;
   --ink-soft:#5A5F78;
   --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+
+  /* ── stage layout ──────────────────────────────────────
+     Landscape puts the two players out to the sides; portrait
+     stands them nearer the middle, smaller, with the long throw
+     running up and down the screen instead of across it. The ball
+     anchors are measured off these elements at runtime, so moving
+     anything here moves the ball with it. */
+  --p-x:        19%;   /* how far in from the edge each player stands */
+  --p-top:      17%;
+  --p-h:        47%;   /* figure height, as a share of the field */
+  --hand-h:     36%;
+  --ground-h:   52%;
+  --ground-btm: -14%;
+  --ground-curve: 22%;
+  --coach-top:  10px;
+}
+
+@media (orientation:portrait){
+  :root{
+    --p-x:        25%;
+    --p-top:      15%;
+    --p-h:        28%;
+    --hand-h:     32%;
+    --ground-h:   65%;
+    --ground-btm: -8%;
+    --ground-curve: 9%;  /* a flatter horizon; the tall dome read as a hill */
+    --coach-top:  44px;  /* clear of the round label in the corner */
+  }
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -57,9 +85,9 @@ body{
 #field::after{
   content:'';
   position:absolute;
-  left:-10%;right:-10%;bottom:-14%;
-  height:52%;
-  border-radius:50% 50% 0 0 / 22% 22% 0 0;
+  left:-10%;right:-10%;bottom:var(--ground-btm);
+  height:var(--ground-h);
+  border-radius:50% 50% 0 0 / var(--ground-curve) var(--ground-curve) 0 0;
   background:var(--grass);
   opacity:.85;
 }
@@ -86,8 +114,8 @@ body{
 .actor .art > *.on{opacity:1}
 .actor img,#hand img{object-fit:contain;object-position:center bottom}
 
-#pL{left:19%;top:17%;height:47%}
-#pR{left:81%;top:17%;height:47%}
+#pL{left:var(--p-x);top:var(--p-top);height:var(--p-h)}
+#pR{left:calc(100% - var(--p-x));top:var(--p-top);height:var(--p-h)}
 
 .nametag{
   position:absolute;
@@ -107,7 +135,7 @@ body{
   position:absolute;
   left:50%;
   bottom:0;
-  height:36%;
+  height:var(--hand-h);
   transform:translateX(-50%);
   pointer-events:none;
 }
@@ -198,7 +226,7 @@ body.armed .ring{animation:pulse 1.5s ease-out infinite}
 #coach{
   position:absolute;
   left:50%;
-  top:calc(env(safe-area-inset-top) + 10px);
+  top:calc(env(safe-area-inset-top) + var(--coach-top));
   transform:translateX(-50%) translateY(-6px);
   z-index:7;
   padding:7px 16px;
@@ -349,25 +377,6 @@ body.armed .ring{animation:pulse 1.5s ease-out infinite}
 body.dev #dev{display:block}
 #dev a{color:var(--orange);margin-left:10px}
 
-/* rotate nag */
-#rotate{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:none;
-  place-items:center;
-  padding:30px;
-  background:var(--indigo);
-  color:#fff;
-  text-align:center;
-}
-#rotate svg{width:86px;height:86px;margin:0 auto 20px;display:block}
-#rotate h2{font-size:21px;font-weight:800;margin-bottom:8px}
-#rotate p{font-size:15px;color:rgba(255,255,255,.7);max-width:30ch;margin:0 auto}
-@media (orientation:portrait) and (max-width:900px){
-  #rotate{display:grid}
-}
-
 @media (prefers-reduced-motion:reduce){
   .ring,.dots i{animation:none}
   .actor .art,#hand .art{animation:none !important}
@@ -447,19 +456,6 @@ body.dev #dev{display:block}
   </div>
 </section>
 
-<div id="rotate">
-  <div>
-    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <rect x="30" y="12" width="40" height="66" rx="6"/>
-      <line x1="42" y1="70" x2="58" y2="70"/>
-      <path d="M18 86a30 30 0 0 0 30-30" stroke="#F37D26"/>
-      <path d="M12 76l6 11 11-6" stroke="#F37D26"/>
-    </svg>
-    <h2>Turn your phone sideways</h2>
-    <p>This game needs landscape mode. Rotate your phone to play.</p>
-  </div>
-</div>
-
 <div id="dev"></div>
 
 <script>
@@ -501,13 +497,16 @@ const ART = {
   ball: 'img/ball.png',
 };
 
-/* ── ball anchor points, as a fraction of the field, plus the
-      size the ball takes there: the two players are across the
-      circle, the student's own hand is right in front of them. ── */
-const ANCHORS = {
-  1: { x:.208, y:.455, s:0.85 },
-  2: { x:.792, y:.455, s:0.85 },
-  0: { x:.500, y:.735, s:1.70 },
+/* ── Where the ball sits in each character's hands, given as a
+      fraction of that character's OWN picture rather than of the
+      screen — so the stage can rearrange itself for portrait and
+      the ball still lands in the hand. `s` is the size the ball
+      takes there: the two players are across the circle, the
+      student's own hand is right in front of them. ── */
+const HAND_SPOT = {
+  1: { x:.50, y:.57, s:0.85 },
+  2: { x:.50, y:.57, s:0.85 },
+  0: { x:.50, y:.26, s:1.70 },
 };
 
 /* ═══ tiny helpers ═══════════════════════════════════════ */
@@ -685,13 +684,21 @@ function popCatch(id){
 
 /* ═══ geometry ═══════════════════════════════════════════ */
 function anchor(id){
-  const r = field.getBoundingClientRect();
-  const a = ANCHORS[id];
-  return { x:a.x*r.width, y:a.y*r.height, s:a.s };
+  const f = field.getBoundingClientRect();
+  const a = slotOf(id).querySelector('.art').getBoundingClientRect();
+  const o = HAND_SPOT[id];
+  return {
+    x: a.left - f.left + a.width  * o.x,
+    y: a.top  - f.top  + a.height * o.y,
+    s: o.s,
+  };
 }
+// the ball belongs to the characters, not to the screen, so it is
+// sized off a figure — that keeps it right in either orientation
 function sizeBall(){
-  const r = field.getBoundingClientRect();
-  field.style.setProperty('--ball', Math.max(22, Math.min(46, r.height*0.085)) + 'px');
+  const w = $('#pL .art').getBoundingClientRect().width;
+  if (!w) return;
+  field.style.setProperty('--ball', Math.max(16, Math.min(64, w * 0.31)) + 'px');
 }
 addEventListener('resize', sizeBall);
 addEventListener('orientationchange', () => setTimeout(sizeBall, 250));
@@ -707,7 +714,8 @@ function fly(from, to, dur){
   return new Promise(resolve => {
     const r = field.getBoundingClientRect();
     const dist = Math.hypot(to.x-from.x, to.y-from.y);
-    const arc = REDUCED ? 0 : Math.min(dist*0.20, r.height*0.26);
+    const span = Math.min(r.width, r.height);
+    const arc = REDUCED ? 0 : Math.min(dist*0.20, span*0.26);
     const spin = REDUCED ? 0 : (from.x < to.x ? 1 : -1) * rand(420, 760);
     const t0 = performance.now();
     (function step(now){
