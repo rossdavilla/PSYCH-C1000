@@ -1,0 +1,6 @@
+[
+  ["var DIR    = \"img/faces/\";", "var DIR = null;  /* the photographs live in window.FACES */"],
+  ["(new Image()).src = DIR + id + \".jpg\";", "(new Image()).src = FACES[id];"],
+  ["img.src = DIR + face.id + \".jpg\";", "img.src = FACES[face.id];"],
+  ["var PLOT_H = 252;", "var PLOT_H = 210;"]
+]

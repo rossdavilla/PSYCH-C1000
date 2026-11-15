@@ -7,8 +7,8 @@ which leaves the discussion to you.
 
 ## Embedding
 
-The game is one self-contained file that renders in a fixed 720 × 450 box with no scrolling
-and no external requests.
+The game renders in a fixed 720 × 450 box with no scrolling and nothing fetched from outside
+the repo. For a copy with the photographs baked in too, see [the standalone copy](#the-standalone-copy).
 
 ```html
 <iframe src="https://rossdavilla.github.io/PSYCH-C1000/Spot%20the%20Dangerous%20Criminal/"
@@ -20,18 +20,63 @@ Students can click a photograph or press `1`, `2`, `3`; `Enter` advances.
 ## Layout
 
 ```
-index.html           the game — HTML, CSS, and JS in one file
-MUGSHOT-PROMPT.md    how the photos were normalized, and the prompt to reuse
-tools/pack.py        rebuilds img/faces/ from img/aligned/
-img/                 the 21 original photographs, as collected
-img/aligned/         1122×1402 normalized masters  (the good copies)
-img/faces/           400×500 JPEGs  (what the game actually loads)
-img/manifest.json    which pNN came from which original, and its group
+index.html                 the game — HTML, CSS, and JS in one file
+standalone.html            the same game, 16:9 with the photos embedded (built, gitignored)
+MUGSHOT-PROMPT.md          how the photos were normalized, and the prompt to reuse
+tools/pack.py              rebuilds img/faces/ from img/aligned/
+tools/build-standalone.sh  rebuilds standalone.html
+tools/rewrites.json        source edits that rebuild needs
+tools/fit.css              16:9 overrides that rebuild needs
+img/                       the 21 original photographs, as collected
+img/aligned/               1122×1402 normalized masters  (the good copies)
+img/faces/                 400×500 JPEGs  (what the game actually loads)
+img/manifest.json          which pNN came from which original, and its group
 ```
 
 `p01`–`p14` are drug convictions, `p15`–`p21` are violent convictions. Each violent face is
 used once per playthrough and the fourteen drug faces fill the other two slots, so no face
 repeats within a run.
+
+## The standalone copy
+
+`index.html` loads its 21 photographs from `img/faces/`, so it needs the folder beside it.
+`standalone.html` is the same game as one file — every photograph embedded as a base64 data
+URI, 756 KB, zero network requests. It runs from a USB stick, an email attachment, a
+Downloads folder with no wifi, or anywhere a single file is all you can upload.
+
+It also differs from the embed in one way, which is the point of having it: it's **16:9**.
+The stage is 720 × 405 and is scaled to fill whatever it opens in — a browser window, a
+projector, fullscreen — with the leftover room on one pair of edges as letterbox. The page
+itself never scrolls at any size, and the photographs take the height that's left rather
+than running off the bottom of it. The 45px the stage loses against the embed come out of the
+photographs and the results chart, which drops from 252px to 210px tall.
+
+It is a local file on purpose: `standalone.html` is gitignored, so it never reaches GitHub
+Pages and is never listed in the site directory. The published copy of this activity is
+`index.html` and only `index.html`. Build the standalone on whichever machine needs it.
+
+Rebuild it after changing `index.html` or any photo:
+
+```bash
+./tools/build-standalone.sh
+```
+
+None of this lives in `index.html` — the build inlines the photographs, adds the 16:9
+stylesheet, and adds the few lines of script that compute the scale. `index.html` stays
+exactly the 720 × 450 embed Top Hat loads, and is the one copy worth editing.
+
+The builder itself is the `build-standalone` skill in `~/.claude/skills/`, shared with the
+other repos; the three files in `tools/` are just this activity's part of it:
+
+| | |
+|---|---|
+| `build-standalone.sh` | the command, with this activity's flags |
+| `rewrites.json` | source edits — the photo paths the script builds at runtime, and the chart height |
+| `fit.css` | where the 45px the stage loses to 16:9 come from |
+
+Each rewrite in `rewrites.json` has to match `index.html` exactly once or the build stops
+without writing anything, so editing the game's JavaScript gives a loud error here rather
+than a standalone that quietly lost its photographs.
 
 ## Regenerating the images
 

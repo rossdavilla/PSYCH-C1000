@@ -1,1 +1,5 @@
 .DS_Store
+
+# Standalone single-file builds: local use only, never published.
+# Rebuild with the activity's tools/build-standalone.sh
+standalone.html

@@ -1,0 +1,22 @@
+/* Overrides for the standalone build only, applied on top of the 16:9 canvas.
+   The stage loses 45px going from 720x450 to 720x405, and this is where those
+   45px come from. index.html is untouched by any of it. */
+
+#stage { height: 405px; }
+
+/* The photographs take the height that's left and set their width from it, so
+   the row shrinks to fit instead of running off the bottom. */
+#cards { flex: 1; min-height: 0; justify-content: center; }
+
+.card {
+  flex: 0 1 auto;
+  height: 100%;
+  aspect-ratio: 4 / 5;
+  max-width: calc((100% - 24px) / 3);
+}
+
+.card img { height: 100%; aspect-ratio: auto; }
+
+/* the results chart gives up the same 45px (and tools/rewrites.json tells the
+   script that draws into it about the new height) */
+#yaxis, #plot { height: 210px; }
