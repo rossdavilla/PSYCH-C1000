@@ -151,34 +151,34 @@ li.plain::before{content:"";flex:0 0 auto;width:3px;height:3px;border-radius:50%
   fill:none;stroke-linecap:round;stroke-linejoin:round}
 .navb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* ---- index ---- */
-#idx{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column}
-#idx-top{flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--line);
-  padding-top:env(safe-area-inset-top,0px)}
-#idx-top-in{display:flex;align-items:center;gap:10px;min-height:50px;
-  padding-left:var(--gut-l);padding-right:var(--gut-r);padding-block:7px}
-#idx-top-in strong{flex:1 1 auto;font-size:15px;font-weight:700}
-#close{padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--fg-dim)}
-#close:hover{background:var(--sunk)}
-#filter{width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;font-size:15px;
-  background:var(--sunk);border:1px solid transparent;color:var(--fg);font-family:inherit}
+/* ---- picker ---- */
+#brand{flex:0 0 auto;font-size:13px;font-weight:700;letter-spacing:-.01em}
+#back{display:flex;align-items:center;gap:7px;padding:6px 10px 6px 6px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--fg-dim);flex:0 0 auto}
+#back:hover{background:var(--sunk)}
+#back svg{width:16px;height:16px;flex:0 0 auto}
+.home-h1{margin:0;font-size:29px;line-height:1.1;font-weight:700;letter-spacing:-.025em}
+.home-sub{margin:8px 0 0;font-size:14.5px;line-height:1.45;color:var(--fg-dim)}
+#filter{width:100%;margin-top:16px;padding:11px 13px;border-radius:9px;font-size:16px;
+  background:var(--surface);border:1px solid var(--line);color:var(--fg);font-family:inherit}
 #filter:focus{border-color:var(--accent);outline:none}
-#idx-list{flex:1 1 auto;overflow-y:auto;padding-left:var(--gut-l);padding-right:var(--gut-r);
-  padding-block:10px calc(24px + env(safe-area-inset-bottom,0px));max-width:640px;
-  margin:0 auto;width:100%}
+#home-list{margin-top:4px}
 .ich{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--ch);margin:16px 0 5px;display:flex;align-items:center;gap:7px}
+  color:var(--ch);margin:20px 0 4px;display:flex;align-items:center;gap:7px}
 .ich::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--ch);flex:0 0 auto}
-.irow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 8px;
-  margin-left:-8px;border-radius:8px;font-size:15px;line-height:1.3;
+.irow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;padding:11px 9px;
+  margin-left:-9px;border-radius:9px;font-size:16px;line-height:1.3;
   -webkit-tap-highlight-color:transparent}
 .irow:hover{background:var(--sunk)}
-.irow[aria-current="true"]{background:var(--sunk);font-weight:600;color:var(--ch)}
 .irow em{flex:0 0 auto;font-family:var(--ff-mono);font-size:11px;font-style:normal;
-  color:var(--fg-faint);font-variant-numeric:tabular-nums;width:18px}
-.empty{padding:28px 4px;font-size:14px;color:var(--fg-faint);text-align:center}
+  color:var(--fg-faint);font-variant-numeric:tabular-nums;width:17px}
+.irow span{flex:1 1 auto;min-width:0}
+.irow b{flex:0 0 auto;color:var(--fg-faint);font-weight:400;font-size:16px}
+.empty{padding:30px 4px;font-size:14.5px;color:var(--fg-faint);text-align:center}
+.home-foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line-soft);
+  font-size:12px;line-height:1.5;color:var(--fg-faint)}
 
-@media (min-width:560px){ h1{font-size:31px} li.crit p{font-size:15px} }
+@media (min-width:560px){ h1{font-size:31px} .home-h1{font-size:34px} li.crit p{font-size:15px} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -189,17 +189,18 @@ li.plain::before{content:"";flex:0 0 auto;width:3px;height:3px;border-radius:50%
 <body>
 <div id="app">
   <header id="bar"><div id="bar-in">
-    <button id="menu" aria-label="Open the list of disorders">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-      Index
+    <button id="back" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+        stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>All disorders
     </button>
+    <div id="brand">DSM Booklet</div>
     <div id="bar-ch"></div>
     <div id="count"></div>
   </div></header>
 
   <main id="screen"><div id="screen-in"></div></main>
 
-  <nav id="nav"><div id="nav-in">
+  <nav id="nav" hidden><div id="nav-in">
     <button class="navb prev" id="go-prev">
       <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span></span>
     </button>
@@ -207,17 +208,6 @@ li.plain::before{content:"";flex:0 0 auto;width:3px;height:3px;border-radius:50%
       <span></span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
     </button>
   </div></nav>
-</div>
-
-<div id="idx" hidden>
-  <div id="idx-top"><div id="idx-top-in" style="flex-wrap:wrap">
-    <div style="display:flex;align-items:center;gap:10px;width:100%">
-      <strong>DSM Booklet</strong>
-      <button id="close">Close</button>
-    </div>
-    <input id="filter" type="search" placeholder="Filter disorders" autocomplete="off">
-  </div></div>
-  <div id="idx-list"></div>
 </div>
 
 <script>
@@ -235,11 +225,13 @@ const WORDS={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:
   eleven:11,twelve:12,thirteen:13};
 function num(t){ t=String(t).toLowerCase(); return WORDS[t] ?? (/^\d+$/.test(t)?+t:null); }
 function target(head){
-  let m = head.match(/([a-z]+|\d+)\s+of\s+(?:[a-z]+|\d+)/i);
-  if(m){ const n=num(m[1]); if(n) return n; }
+  // scan every "<n> of <m>" and take the first whose leading token is a number,
+  // so prose like "surge of fear" cannot beat "check 4 of 13"
+  const re = /([a-z]+|\d+)\s+of\s+(?:[a-z]+|\d+)/gi;
+  let m;
+  while((m = re.exec(head))){ const n = num(m[1]); if(n) return n; }
   m = head.match(/all\s+(\d+)/i);
-  if(m) return +m[1];
-  return null;
+  return m ? +m[1] : null;
 }
 
 let store={};
@@ -251,17 +243,35 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":
 // the booklet marks required criteria with a star; render it as a coloured glyph
 const mark = s => esc(s).replace(/★/g,'<span class="star">★</span>');
 
-let at = 0;
+let at = -1;          // -1 = the picker
+let query = "";
 
 function render(){
+  const home = at < 0;
+  el("back").hidden = home;
+  el("brand").hidden = !home;
+  el("nav").hidden = home;
+  el("screen").scrollTop = 0;
+
+  if(home){
+    document.documentElement.style.removeProperty("--ch");
+    el("bar-ch").textContent = "";
+    el("count").textContent = SCREENS.length + " disorders";
+    el("screen-in").innerHTML = viewHome();
+    const f = el("filter");
+    f.value = query;
+    f.addEventListener("input", e=>{ query = e.target.value; paintList(); });
+    paintList();
+    document.title = "DSM Booklet";
+    if(location.hash !== "#index") history.replaceState(null,"","#index");
+    return;
+  }
+
   const s = SCREENS[at];
   document.documentElement.style.setProperty("--ch", `var(${CH_COLOR[s.chapter]})`);
   el("bar-ch").textContent = CH_NAME[s.chapter];
   el("count").textContent = (at+1) + " / " + SCREENS.length;
-
-  const box = el("screen-in");
-  box.innerHTML = s.kind === "p" ? viewPersonality() : viewDisorder(s.data);
-  el("screen").scrollTop = 0;
+  el("screen-in").innerHTML = s.kind === "p" ? viewPersonality() : viewDisorder(s.data);
 
   const p = SCREENS[at-1], n = SCREENS[at+1];
   const pb = el("go-prev"), nb = el("go-next");
@@ -270,8 +280,38 @@ function render(){
   nb.querySelector("span").textContent = n ? n.name : "";
 
   if(location.hash.slice(1) !== s.id) history.replaceState(null,"","#"+s.id);
-  document.title = s.name + " — DSM Booklet";
+  document.title = s.name + " \u2014 DSM Booklet";
   wire(s);
+}
+
+function viewHome(){
+  return `<h1 class="home-h1">DSM Booklet</h1>
+    <p class="home-sub">Diagnostic criteria from the DSM-5-TR. Pick a disorder to see what has to
+      be true, how many symptoms it takes, and how long they have to last.</p>
+    <input id="filter" type="search" placeholder="Filter disorders" autocomplete="off"
+      aria-label="Filter disorders">
+    <div id="home-list"></div>
+    <p class="home-foot">Criteria are paraphrased in plain language for teaching.
+      This is a study aid, not a diagnostic instrument.</p>`;
+}
+
+function paintList(){
+  const q = query.trim().toLowerCase();
+  let html="", lastCh=null, shown=0;
+  SCREENS.forEach((s,i)=>{
+    if(q && !s.name.toLowerCase().includes(q) && !CH_NAME[s.chapter].toLowerCase().includes(q)) return;
+    if(s.chapter !== lastCh){
+      html += `<p class="ich" style="--ch:var(${CH_COLOR[s.chapter]})">${esc(CH_NAME[s.chapter])}</p>`;
+      lastCh = s.chapter;
+    }
+    html += `<button class="irow" data-go="${i}" style="--ch:var(${CH_COLOR[s.chapter]})">
+      <em>${i+1}</em><span>${esc(s.name)}</span><b>\u203a</b></button>`;
+    shown++;
+  });
+  const list = el("home-list");
+  list.innerHTML = shown ? html : `<p class="empty">Nothing matches that.</p>`;
+  list.querySelectorAll("[data-go]").forEach(b=>
+    b.addEventListener("click", ()=>go(+b.dataset.go)));
 }
 
 function viewDisorder(d){
@@ -318,8 +358,6 @@ function viewPersonality(){
 }
 
 function tallies(){
-  const s = SCREENS[at];
-  if(s.kind !== "d") return;
   document.querySelectorAll("[data-tally]").forEach(node=>{
     const gi = node.dataset.tally;
     const n = document.querySelectorAll(`li.crit[data-g="${gi}"][aria-checked="true"]`).length;
@@ -330,8 +368,8 @@ function tallies(){
 }
 
 function wire(s){
-  if(s.kind === "d"){
-    document.querySelectorAll("li.crit").forEach(li=>{
+  if(s.kind !== "d") return;
+  document.querySelectorAll("li.crit").forEach(li=>{
       const hit = ()=>{
         const on = li.getAttribute("aria-checked") !== "true";
         li.setAttribute("aria-checked", on);
@@ -350,65 +388,40 @@ function wire(s){
       document.querySelectorAll("li.crit").forEach(li=>li.setAttribute("aria-checked","false"));
       tallies();
     });
-    tallies();
-  }
+  tallies();
 }
 
-function go(i){ if(i>=0 && i<SCREENS.length){ at=i; render(); } }
+function go(i){ if(i >= -1 && i < SCREENS.length){ at = i; render(); } }
 
-el("go-prev").addEventListener("click",()=>go(at-1));
-el("go-next").addEventListener("click",()=>go(at+1));
-document.addEventListener("keydown",e=>{
-  if(!el("idx").hidden) { if(e.key==="Escape") closeIdx(); return; }
-  if(e.target.tagName==="INPUT") return;
-  if(e.key==="ArrowLeft") go(at-1);
-  if(e.key==="ArrowRight") go(at+1);
+el("back").addEventListener("click", ()=>go(-1));
+el("go-prev").addEventListener("click", ()=>go(at-1));
+el("go-next").addEventListener("click", ()=>go(at+1));
+document.addEventListener("keydown", e=>{
+  if(e.target.tagName === "INPUT") return;
+  if(at < 0) return;
+  if(e.key === "ArrowLeft") go(at-1);
+  if(e.key === "ArrowRight") go(at+1);
+  if(e.key === "Escape") go(-1);
 });
 
-// swipe between disorders
-let x0=null,y0=null;
+let x0=null, y0=null;
 const sc = el("screen");
-sc.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; x0=t.clientX; y0=t.clientY; },{passive:true});
-sc.addEventListener("touchend",e=>{
-  if(x0===null) return;
+sc.addEventListener("touchstart", e=>{ const t=e.changedTouches[0]; x0=t.clientX; y0=t.clientY; },{passive:true});
+sc.addEventListener("touchend", e=>{
+  if(x0===null || at<0){ x0=y0=null; return; }
   const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
   if(Math.abs(dx)>64 && Math.abs(dx)>Math.abs(dy)*1.7) go(dx<0 ? at+1 : at-1);
   x0=y0=null;
 },{passive:true});
 
-// index
-function buildIdx(q){
-  q = (q||"").trim().toLowerCase();
-  const list = el("idx-list");
-  let html="", lastCh=null, shown=0;
-  SCREENS.forEach((s,i)=>{
-    if(q && !s.name.toLowerCase().includes(q) && !CH_NAME[s.chapter].toLowerCase().includes(q)) return;
-    if(s.chapter !== lastCh){
-      html += `<p class="ich" style="--ch:var(${CH_COLOR[s.chapter]})">${esc(CH_NAME[s.chapter])}</p>`;
-      lastCh = s.chapter;
-    }
-    html += `<button class="irow" data-go="${i}" aria-current="${i===at}"
-      style="--ch:var(${CH_COLOR[s.chapter]})"><em>${i+1}</em>${esc(s.name)}</button>`;
-    shown++;
-  });
-  list.innerHTML = shown ? html : `<p class="empty">Nothing matches that.</p>`;
-  list.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{
-    closeIdx(); go(+b.dataset.go);
-  }));
+function fromHash(){
+  const h = location.hash.slice(1);
+  if(!h || h === "index") return -1;
+  const i = SCREENS.findIndex(s=>s.id === h);
+  return i >= 0 ? i : -1;
 }
-function openIdx(){ el("idx").hidden=false; buildIdx(el("filter").value); }
-function closeIdx(){ el("idx").hidden=true; }
-el("menu").addEventListener("click",openIdx);
-el("close").addEventListener("click",closeIdx);
-el("filter").addEventListener("input",e=>buildIdx(e.target.value));
-
-// open on the hash, if it names a screen
-const want = SCREENS.findIndex(s=>s.id===location.hash.slice(1));
-if(want>=0) at=want;
-window.addEventListener("hashchange",()=>{
-  const i = SCREENS.findIndex(s=>s.id===location.hash.slice(1));
-  if(i>=0 && i!==at) go(i);
-});
+at = fromHash();
+window.addEventListener("hashchange", ()=>{ const i = fromHash(); if(i !== at) go(i); });
 render();
 </script>
 
