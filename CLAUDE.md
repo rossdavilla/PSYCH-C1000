@@ -11,6 +11,7 @@ The course site and class activities for **PSYCH-C1000** at Modesto Junior Colle
 | `PSYCHC1000-syllabus.html` | The syllabus page; it links `syllabus-assets/style.css` and `syllabus-assets/textbook.js`, which are copies of the textbook site's shared assets |
 | `knowyourprof.html` | Know Your Professor |
 | `mythorfact.html` | Myth or Fact? — each student gets one claim and locks in true or false; answers stay hidden until the class hears the magic word |
+| `dsm.html` | **DSM Booklet** — DSM-5-TR criteria for fourteen disorders, one per screen, swipe or tap to move, with a chapter-grouped index. Criteria are tappable and each group counts checked symptoms against its own threshold. Same content as the printed booklets in the lecture folder. A reference, so it is **not** a 720 × 450 Top Hat activity |
 | `Emotion Game/` | **Make a Face** — partners act out an emotion with face and shoulders only, 12 emotions, 15 seconds each |
 | `cyberball/` | **Cyberball** — the social-exclusion demo. `index.html` assigns rejection by a 50/50 draw; `cyberball-rejection-nopractice.html` and `cyberball-same.html` are the fixed-condition variants |
 | `Spot the Dangerous Criminal/` | Pick the violent offender out of three booking photographs, then see how close to chance you scored |

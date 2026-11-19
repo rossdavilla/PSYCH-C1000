@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#6D28D9">
+<meta name="description" content="DSM-5-TR diagnostic criteria for fourteen disorders, one per screen. A study reference for PSYCH-C1000, not a diagnostic instrument.">
+<link rel="icon" type="image/x-icon" href="syllabus-assets/img/favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="syllabus-assets/img/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="syllabus-assets/img/favicon/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="syllabus-assets/img/favicon/apple-touch-icon.png">
+<title>DSM Booklet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: fixed header + footer, one disorder per scrolling screen between them. */
+:root{
+  --bg:#f7f7f5; --surface:#ffffff; --sunk:#eeeeec;
+  --fg:#1c1c1e; --fg-dim:#5c5c63; --fg-faint:#86868e;
+  --line:#dededa; --line-soft:#e9e9e5;
+  --accent:#1f6f68;
+  --c-schz:#4f5bab; --c-bip:#8d6417; --c-dep:#2b6ba3; --c-anx:#1a736d;
+  --c-ocd:#3a7336; --c-trauma:#97492f; --c-diss:#76458c; --c-pers:#55606e;
+  --ff-sans:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --ff-mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --gut-l:max(16px,env(safe-area-inset-left,0px));
+  --gut-r:max(16px,env(safe-area-inset-right,0px));
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141416; --surface:#1c1c1f; --sunk:#242428;
+  --fg:#ececef; --fg-dim:#a8a8b0; --fg-faint:#76767e;
+  --line:#32323a; --line-soft:#26262c;
+  --accent:#5fc4bb;
+  --c-schz:#9aa2e8; --c-bip:#d8a85c; --c-dep:#7ab6e8; --c-anx:#5fc4bb;
+  --c-ocd:#85c47e; --c-trauma:#e0957a; --c-diss:#c395d8; --c-pers:#9aa4b4;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#141416; --surface:#1c1c1f; --sunk:#242428;
+  --fg:#ececef; --fg-dim:#a8a8b0; --fg-faint:#76767e;
+  --line:#32323a; --line-soft:#26262c;
+  --accent:#5fc4bb;
+  --c-schz:#9aa2e8; --c-bip:#d8a85c; --c-dep:#7ab6e8; --c-anx:#5fc4bb;
+  --c-ocd:#85c47e; --c-trauma:#e0957a; --c-diss:#c395d8; --c-pers:#9aa4b4;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--ff-sans);
+  -webkit-text-size-adjust:100%;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+
+#app{display:flex;flex-direction:column;height:100%}
+
+/* ---- header ---- */
+#bar{flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--line)}
+#bar-in{display:flex;align-items:center;gap:10px;min-height:50px;
+  padding-left:var(--gut-l);padding-right:var(--gut-r);padding-block:7px}
+#menu{display:flex;align-items:center;gap:7px;padding:6px 10px 6px 6px;border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--fg-dim);flex:0 0 auto}
+#menu:hover{background:var(--sunk)}
+#menu svg{width:16px;height:16px;flex:0 0 auto}
+#bar-ch{flex:1 1 auto;min-width:0;font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ch);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;text-align:right}
+#count{flex:0 0 auto;font-family:var(--ff-mono);font-size:11px;font-weight:600;
+  color:var(--fg-faint);font-variant-numeric:tabular-nums}
+
+/* ---- screen ---- */
+#screen{flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#screen-in{padding-left:var(--gut-l);padding-right:var(--gut-r);
+  padding-block:20px 30px;max-width:640px;margin:0 auto}
+
+.eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ch);display:flex;align-items:center;gap:7px;margin-bottom:9px}
+.eyebrow::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--ch);flex:0 0 auto}
+h1{margin:0;font-size:27px;line-height:1.13;font-weight:700;letter-spacing:-.02em;
+  text-wrap:balance}
+.note{margin:7px 0 0;font-size:12px;line-height:1.45;color:var(--fg-dim)}
+
+.howlong{display:inline-flex;align-items:baseline;gap:8px;margin-top:14px;padding:7px 11px;
+  border-radius:7px;background:var(--sunk);border-left:3px solid var(--ch)}
+.howlong b{font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--fg-faint)}
+.howlong span{font-family:var(--ff-mono);font-size:12.5px;font-weight:600;color:var(--fg)}
+
+.thresh{margin-top:16px;padding:13px 14px;border-radius:9px;background:var(--surface);
+  border:1px solid var(--line)}
+.thresh b{display:block;font-size:9.5px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--ch);margin-bottom:5px}
+.thresh p{margin:0;font-size:14px;line-height:1.45;font-weight:500}
+
+.grp{margin-top:22px}
+.grp-h{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px}
+.grp-h h2{margin:0;flex:1 1 auto;min-width:0;font-size:13.5px;line-height:1.35;font-weight:600;
+  color:var(--ch)}
+.tally{flex:0 0 auto;font-family:var(--ff-mono);font-size:10.5px;font-weight:600;
+  padding:3px 7px;border-radius:20px;background:var(--sunk);color:var(--fg-faint);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.tally.met{background:var(--ch);color:var(--surface)}
+
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+li.crit{display:flex;gap:11px;align-items:flex-start;padding:7px 8px;margin-left:-8px;
+  border-radius:7px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+li.crit:hover{background:var(--sunk)}
+li.crit .box{flex:0 0 auto;width:17px;height:17px;margin-top:1px;border-radius:4px;
+  border:1.5px solid var(--fg-faint);display:grid;place-items:center;transition:.12s}
+li.crit .box svg{width:11px;height:11px;opacity:0;stroke:var(--surface);stroke-width:3.2;
+  fill:none;stroke-linecap:round;stroke-linejoin:round}
+li.crit[aria-checked="true"] .box{background:var(--ch);border-color:var(--ch)}
+li.crit[aria-checked="true"] .box svg{opacity:1}
+li.crit p{margin:0;font-size:14.5px;line-height:1.42}
+li.crit[aria-checked="true"] p{color:var(--fg-dim)}
+li.crit .star{color:var(--ch);font-size:12px}
+
+li.plain{display:flex;gap:9px;padding:4px 0;font-size:13px;line-height:1.45;
+  color:var(--fg-dim);font-style:italic}
+li.plain::before{content:"";flex:0 0 auto;width:3px;height:3px;border-radius:50%;
+  background:var(--fg-faint);margin-top:8px}
+
+.prev{margin-top:24px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.prev b{display:block;font-size:9.5px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--fg-faint);margin-bottom:4px}
+.prev p{margin:0;font-size:13px;line-height:1.48;color:var(--fg-dim)}
+
+.reset{margin-top:20px;font-size:12px;font-weight:600;color:var(--fg-faint);
+  padding:7px 11px;border:1px solid var(--line);border-radius:7px}
+.reset:hover{color:var(--fg);border-color:var(--fg-faint)}
+
+/* personality screen */
+.pintro{margin:14px 0 0;font-size:14px;line-height:1.5;color:var(--fg-dim)}
+.pclus{margin-top:22px}
+.pclus h2{margin:0 0 9px;font-size:13.5px;font-weight:600;color:var(--ch)}
+.pd{padding:9px 0;border-top:1px solid var(--line-soft);font-size:14.5px;line-height:1.42}
+.pd:first-of-type{border-top:0}
+.pd b{font-weight:600}
+.pd span{color:var(--fg-dim)}
+
+/* ---- footer ---- */
+#nav{flex:0 0 auto;background:var(--surface);border-top:1px solid var(--line)}
+#nav-in{display:flex;padding-left:var(--gut-l);padding-right:var(--gut-r);
+  padding-block:0 env(safe-area-inset-bottom,0px)}
+.navb{flex:1 1 0;min-width:0;display:flex;align-items:center;gap:8px;padding:11px 4px;
+  font-size:12.5px;font-weight:500;color:var(--fg-dim);-webkit-tap-highlight-color:transparent}
+.navb:disabled{opacity:.3;cursor:default}
+.navb:not(:disabled):hover{color:var(--fg)}
+.navb.next{justify-content:flex-end;text-align:right;border-left:1px solid var(--line-soft)}
+.navb svg{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;stroke-width:2.2;
+  fill:none;stroke-linecap:round;stroke-linejoin:round}
+.navb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- index ---- */
+#idx{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column}
+#idx-top{flex:0 0 auto;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-top:env(safe-area-inset-top,0px)}
+#idx-top-in{display:flex;align-items:center;gap:10px;min-height:50px;
+  padding-left:var(--gut-l);padding-right:var(--gut-r);padding-block:7px}
+#idx-top-in strong{flex:1 1 auto;font-size:15px;font-weight:700}
+#close{padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;color:var(--fg-dim)}
+#close:hover{background:var(--sunk)}
+#filter{width:100%;margin-top:4px;padding:9px 12px;border-radius:8px;font-size:15px;
+  background:var(--sunk);border:1px solid transparent;color:var(--fg);font-family:inherit}
+#filter:focus{border-color:var(--accent);outline:none}
+#idx-list{flex:1 1 auto;overflow-y:auto;padding-left:var(--gut-l);padding-right:var(--gut-r);
+  padding-block:10px calc(24px + env(safe-area-inset-bottom,0px));max-width:640px;
+  margin:0 auto;width:100%}
+.ich{font-size:10px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ch);margin:16px 0 5px;display:flex;align-items:center;gap:7px}
+.ich::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--ch);flex:0 0 auto}
+.irow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 8px;
+  margin-left:-8px;border-radius:8px;font-size:15px;line-height:1.3;
+  -webkit-tap-highlight-color:transparent}
+.irow:hover{background:var(--sunk)}
+.irow[aria-current="true"]{background:var(--sunk);font-weight:600;color:var(--ch)}
+.irow em{flex:0 0 auto;font-family:var(--ff-mono);font-size:11px;font-style:normal;
+  color:var(--fg-faint);font-variant-numeric:tabular-nums;width:18px}
+.empty{padding:28px 4px;font-size:14px;color:var(--fg-faint);text-align:center}
+
+@media (min-width:560px){ h1{font-size:31px} li.crit p{font-size:15px} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="bar"><div id="bar-in">
+    <button id="menu" aria-label="Open the list of disorders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      Index
+    </button>
+    <div id="bar-ch"></div>
+    <div id="count"></div>
+  </div></header>
+
+  <main id="screen"><div id="screen-in"></div></main>
+
+  <nav id="nav"><div id="nav-in">
+    <button class="navb prev" id="go-prev">
+      <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span></span>
+    </button>
+    <button class="navb next" id="go-next">
+      <span></span><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div></nav>
+</div>
+
+<div id="idx" hidden>
+  <div id="idx-top"><div id="idx-top-in" style="flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:10px;width:100%">
+      <strong>DSM Booklet</strong>
+      <button id="close">Close</button>
+    </div>
+    <input id="filter" type="search" placeholder="Filter disorders" autocomplete="off">
+  </div></div>
+  <div id="idx-list"></div>
+</div>
+
+<script>
+const DATA = {"chapters":[{"key":"schz","name":"Schizophrenia Spectrum & Other Psychotic Disorders"},{"key":"bip","name":"Bipolar & Related Disorders"},{"key":"dep","name":"Depressive Disorders"},{"key":"anx","name":"Anxiety Disorders"},{"key":"ocd","name":"Obsessive-Compulsive & Related Disorders"},{"key":"trauma","name":"Trauma- & Stressor-Related Disorders"},{"key":"diss","name":"Dissociative Disorders"},{"key":"pers","name":"Personality Disorders"}],"disorders":[{"id":"schizophrenia","name":"Schizophrenia","chapter":"schz","note":"Schizophrenia Spectrum · chapter also holds schizoaffective, schizophreniform, delusional disorders","duration":"6+ MONTHS total, with 1+ MONTH active","threshold":"Check 2 of the 5 symptoms in A, each present a significant part of 1 month — and at least one MUST be #1, #2, or #3. Total illness duration 6+ months.","groups":[{"head":"A. Two of five, for a significant portion of 1 month:","note":false,"items":["Delusions  ★ one of these three is required","Hallucinations  ★ one of these three is required","Disorganized speech  ★ one of these three is required","Grossly disorganized or catatonic behavior","Negative symptoms — flat emotional expression, loss of motivation"]},{"head":"B – F. Also required:","note":false,"items":["B. Decline in work, relationships, or self-care","C. Total duration 6+ months, including 1+ month of active symptoms; the rest may be build-up or residual","D. Not better explained by schizoaffective disorder, or depression/bipolar with psychosis","E. Not caused by a substance or medical condition","F. If autism or a childhood communication disorder is present, prominent delusions or hallucinations are required for 1+ month"]}],"prevalence":"About 0.3–0.7% lifetime. Onset: late teens to mid-30s — early-to-mid 20s for men, late 20s for women."},{"id":"bipolar-i-disorder","name":"Bipolar I Disorder","chapter":"bip","note":"Bipolar & Related · chapter also holds Bipolar II and cyclothymic disorder","duration":"1+ WEEK of mania (any length if hospitalized)","threshold":"Needs ONE manic episode, ever. Check 3 of the 7 symptoms in B — or 4 of 7 if the mood is only irritable. Depression is common but NOT required.","groups":[{"head":"A. Manic episode: elevated, expansive, or irritable mood AND increased energy","note":false,"items":["Lasting 1+ week, most of the day nearly every day (or any length if hospitalized)"]},{"head":"B. Check 3 of 7  (4 of 7 if mood is only irritable):","note":false,"items":["Inflated self-esteem or grandiosity","Decreased need for sleep — rested on very little","More talkative than usual, or pressured speech","Racing thoughts or flight of ideas","Distractibility","Increased goal-directed activity or agitation","Risky behavior: spending sprees, sexual indiscretions, bad investments"]},{"head":"C – D. Also required:","note":false,"items":["C. Marked impairment, OR hospitalization, OR psychotic features","D. Not caused by a substance or medical condition"]},{"head":"Key contrast:","note":true,"items":["Mania is severe enough to wreck functioning. Hypomania is not. That is the Bipolar I / II line."]}],"prevalence":"About 0.6–1.5% of U.S. adults in a given year. Mean onset around age 18; roughly equal in men and women."},{"id":"bipolar-ii-disorder","name":"Bipolar II Disorder","chapter":"bip","note":"Bipolar & Related · a distinct diagnosis, NOT a milder Bipolar I","duration":"4+ DAYS hypomania  +  2+ WEEKS depression","threshold":"Needs BOTH: at least one hypomanic episode AND at least one major depressive episode — and NEVER a full manic episode. Bipolar II is not “milder” bipolar.","groups":[{"head":"1. Hypomanic episode — elevated/irritable mood + increased energy:","note":false,"items":["Lasting 4+ consecutive days, most of the day nearly every day","Check 3 of the same 7 symptoms as mania (4 of 7 if irritable only)","Clear change from usual self, observable by other people","NOT severe enough to cause marked impairment or hospitalization","NO psychotic features — if psychosis is present, the episode is mania"]},{"head":"2. Major depressive episode — full MDD criteria:","note":false,"items":["5 of 9 symptoms for 2+ weeks (see Major Depressive Disorder page)"]},{"head":"3. Also required:","note":false,"items":["No manic episode has ever occurred  ★ one manic episode makes it Bipolar I","Not better explained by a psychotic disorder","Significant distress or impairment from the depression or the mood swings"]}],"prevalence":"About 0.8% of U.S. adults in a given year. Typical onset: mid-20s, slightly later than Bipolar I. People usually seek help for the depression, not the hypomania."},{"id":"major-depressive-disorder","name":"Major Depressive Disorder","chapter":"dep","note":"Depressive Disorders · chapter also holds disruptive mood dysregulation and PMDD","duration":"2+ WEEKS","threshold":"Check 5 of the 9 symptoms in the SAME 2-week period — and at least one of them must be #1 (depressed mood) or #2 (loss of interest).","groups":[{"head":"A. Five of nine, nearly every day, for 2+ weeks:","note":false,"items":["Depressed mood most of the day  ★ gateway symptom","Markedly less interest or pleasure in almost everything  ★ gateway symptom","Significant weight or appetite change","Insomnia or sleeping too much","Restless agitation or visibly slowed movement","Fatigue or loss of energy","Feelings of worthlessness or excessive guilt","Trouble thinking, concentrating, or deciding","Recurrent thoughts of death, suicidal ideation, plan, or attempt"]},{"head":"B – E. Also required:","note":false,"items":["B. Causes real distress or impairment","C. Not caused by a substance or medical condition","D. Not better explained by a psychotic disorder","E. No history of a manic or hypomanic episode  ★ this rules out bipolar"]}],"prevalence":"About 7–8% of U.S. adults in a given year; markedly higher in ages 18–29. Onset at any age, peaking in the 20s."},{"id":"persistent-depressive-disorder","name":"Persistent Depressive Disorder","chapter":"dep","note":"Depressive Disorders · formerly dysthymia; DSM-5 merged it with chronic major depression","duration":"2+ YEARS (1+ year in youth)","threshold":"Depressed mood more days than not for 2 years, PLUS 2 of the 6 symptoms below. Fewer symptoms than MDD — but far longer.","groups":[{"head":"A. Depressed mood most of the day, more days than not, for 2+ years","note":true,"items":["In children and adolescents, 1 year is enough; mood may be irritable instead"]},{"head":"B. While depressed, check 2 of 6:","note":false,"items":["Poor appetite or overeating","Insomnia or sleeping too much","Low energy or fatigue","Low self-esteem","Poor concentration or difficulty deciding","Feelings of hopelessness"]},{"head":"C – H. Also required:","note":false,"items":["C. Never symptom-free for more than 2 months at a time during those 2 years","D. Full MDD criteria MAY also be met during this period (DSM-5-TR allows both)","E. No manic or hypomanic episode ever","F. Not better explained by a psychotic disorder","G. Not caused by a substance or medical condition","H. Causes real distress or impairment"]}],"prevalence":"About 1.5% of U.S. adults in a given year. Onset is typically early and gradual — childhood, adolescence, or early adult life."},{"id":"specific-phobia","name":"Specific Phobia","chapter":"anx","note":"Anxiety Disorders · chapter also holds separation anxiety, selective mutism, social anxiety, agoraphobia","duration":"6+ MONTHS","threshold":"ALL seven criteria (A–G) must be met. This is not a “count the symptoms” diagnosis — every box has to be checked.","groups":[{"head":"Check all 7:","note":false,"items":["A. Marked fear or anxiety about a specific object or situation","B. The object almost always triggers immediate fear","C. Actively avoided, or endured with intense dread","D. Fear is out of proportion to the actual danger","E. Persistent, lasting 6 months or more","F. Causes real distress or impairment in daily life","G. Not better explained by another disorder"]},{"head":"Specify the type:","note":true,"items":["Animal · Natural environment · Blood-injection-injury · Situational · Other"]}],"prevalence":"About 8–12% of U.S. adults in a given year — one of the most common disorders. Typical onset: childhood, median age 7–11."},{"id":"panic-disorder","name":"Panic Disorder","chapter":"anx","note":"Anxiety Disorders · a panic ATTACK is a specifier, not a disorder — it can be added to any diagnosis","duration":"1+ MONTH of worry or avoidance","threshold":"A panic attack needs 4 of the 13 symptoms below. Panic DISORDER needs recurrent unexpected attacks PLUS Criterion B.","groups":[{"head":"A. Panic attack: abrupt surge of fear peaking within minutes — check 4 of 13","note":false,"items":["Pounding heart or racing pulse","Sweating","Trembling or shaking","Shortness of breath or smothering","Feeling of choking","Chest pain or discomfort","Nausea or stomach distress","Dizzy, unsteady, light-headed, faint","Chills or heat sensations","Numbness or tingling","Feeling unreal or detached from self","Fear of losing control or “going crazy”","Fear of dying"]},{"head":"B. For 1+ month after an attack, at least one of:","note":false,"items":["Persistent worry about more attacks or what they mean","Major unhelpful change in behavior to avoid attacks"]},{"head":"C – D. Rule-outs (both required)","note":false,"items":["Not caused by a substance or medical condition","Not better explained by another mental disorder"]}],"prevalence":"About 2–3% of U.S. adults and adolescents in a given year. Typical onset: early 20s (median 20–24); rare before 14."},{"id":"generalized-anxiety-disorder","name":"Generalized Anxiety Disorder","chapter":"anx","note":"Anxiety Disorders · worry is free-floating — no feared object, no discrete attack","duration":"6+ MONTHS","threshold":"Excessive, hard-to-control worry for 6+ months, PLUS 3 of the 6 symptoms in C. In children only 1 of the 6 is required.","groups":[{"head":"A – B. The worry itself (both required):","note":false,"items":["A. Excessive anxiety and worry, more days than not, for 6+ months, about a number of events or activities (work, school, health, money)","B. The person finds the worry difficult to control"]},{"head":"C. Check 3 of 6  (only 1 of 6 in children):","note":false,"items":["Restlessness, feeling keyed up or on edge","Easily fatigued","Difficulty concentrating or mind going blank","Irritability","Muscle tension  ★ best single clue it is GAD and not depression","Sleep disturbance — trouble falling or staying asleep, or restless sleep"]},{"head":"D – F. Also required:","note":false,"items":["D. Causes real distress or impairment","E. Not caused by a substance or medical condition","F. Not better explained by another mental disorder"]},{"head":"Telling it apart:","note":true,"items":["Specific phobia has a feared OBJECT. Panic disorder has discrete ATTACKS. GAD has neither — the worry drifts from topic to topic."]}],"prevalence":"About 2.9% of U.S. adults in a given year (0.9% of adolescents); roughly 2 women for every man. Median onset age 30 — later than the other anxiety disorders, and rare before adolescence."},{"id":"obsessive-compulsive-disorder","name":"Obsessive-Compulsive Disorder","chapter":"ocd","note":"OC & Related · chapter also holds body dysmorphic, hoarding, excoriation disorders","duration":"No minimum — but 1+ HOUR/DAY","threshold":"Criterion A needs obsessions, compulsions, OR both — you do not need both. Then B, C, and D must all be met.","groups":[{"head":"A. Obsessions (both parts), compulsions (both parts), or both:","note":false,"items":["Recurrent, intrusive, unwanted thoughts, urges, or images that cause distress","The person tries to suppress, ignore, or neutralize them","Repetitive behaviors or mental acts the person feels driven to perform","Aimed at reducing distress, but clearly excessive or not realistically connected"]},{"head":"B – D. Also required:","note":false,"items":["B. Takes 1+ hour a day, or causes real distress or impairment","C. Not caused by a substance or medical condition","D. Not better explained by another mental disorder"]},{"head":"Specify level of insight:","note":true,"items":["Good/fair · Poor · Absent (delusional) · and whether tic-related"]}],"prevalence":"About 1.2% of U.S. adults in a given year. Mean onset age 19.5; about 25% of cases begin by age 14. Onset after 35 is unusual."},{"id":"trichotillomania","name":"Trichotillomania","chapter":"ocd","note":"OC & Related · full DSM-5-TR name is Trichotillomania (Hair-Pulling Disorder)","duration":"No minimum duration","threshold":"ALL five criteria (A–E) must be met. Note what is NOT required: no minimum duration, no anxiety before pulling, no relief afterward.","groups":[{"head":"Check all 5:","note":false,"items":["A. Recurrent pulling out of one's own hair, resulting in hair loss","B. Repeated attempts to stop or cut down on the pulling","C. Causes real distress or impairment in daily life","D. Not caused by another medical condition (e.g., a skin condition)","E. Not better explained by another mental disorder (e.g., body dysmorphic disorder)"]},{"head":"Common sites:","note":true,"items":["Scalp, eyebrows, and eyelashes are most common; any body region is possible"]}],"prevalence":"About 1–2% of adults and adolescents in a given year. Among adults in treatment, roughly 10 women for every 1 man. Typical onset: around puberty."},{"id":"post-traumatic-stress-disorder","name":"Post-Traumatic Stress Disorder","chapter":"trauma","note":"Trauma- & Stressor-Related · chapter also holds acute stress and adjustment disorders","duration":"MORE THAN 1 MONTH","threshold":"Trauma exposure (A), then 1 of 5 in B, 1 of 2 in C, 2 of 7 in D, and 2 of 6 in E — plus F, G, H. Criteria below are for adults and children over 6.","groups":[{"head":"A. Exposure to death, serious injury, or sexual violence — 1 of 4 ways:","note":false,"items":["Experienced it directly","Witnessed it happen to someone else in person","Learned it happened to someone close (violent or accidental)","Repeated exposure to details on the job (e.g., first responder)"]},{"head":"B. Intrusion symptoms — check 1 of 5:","note":false,"items":["Intrusive memories","Distressing dreams","Flashbacks","Distress at reminders","Physical reactions to reminders"]},{"head":"C. Avoidance — check 1 of 2:","note":false,"items":["Avoids thoughts and feelings","Avoids people, places, things"]},{"head":"D. Negative changes in thinking and mood — check 2 of 7:","note":false,"items":["Can't recall key parts","Negative beliefs about self/world","Distorted blame of self/others","Persistent negative mood","Less interest in activities","Feels detached from others","Can't feel positive emotions"]},{"head":"E. Changes in arousal and reactivity — check 2 of 6:","note":false,"items":["Irritability or anger","Reckless behavior","Hypervigilance","Exaggerated startle","Poor concentration","Sleep problems"]},{"head":"F – H. Also required:","note":false,"items":["F. Symptoms last more than 1 month","G. Causes real distress or impairment","H. Not caused by a substance or medical condition"]}],"prevalence":"About 3.4–3.7% of U.S. adults in a given year; roughly 8% lifetime. Onset at any age, usually within 3 months of the trauma."},{"id":"dissociative-identity-disorder","name":"Dissociative Identity Disorder","chapter":"diss","note":"Dissociative Disorders · formerly multiple personality disorder","duration":"No minimum — recurrent","threshold":"ALL five criteria (A–E) must be met. Criterion A needs 2 or more distinct identity states; Criterion B (memory gaps) is required, not optional.","groups":[{"head":"A. Disruption of identity — two or more distinct personality states:","note":false,"items":["Marked discontinuity in sense of self and sense of agency","With changes in emotion, behavior, consciousness, memory, perception, thinking, and/or motor functioning","May be self-reported or observed by others","In some cultures described as an experience of possession"]},{"head":"B – E. Also required:","note":false,"items":["B. Recurrent gaps in memory for everyday events, personal information, or trauma  ★ required","C. Causes real distress or impairment","D. Not a normal part of a broadly accepted cultural or religious practice","E. Not caused by a substance or another medical condition (e.g., seizures)"]}],"prevalence":"About 1.5% of U.S. adults in a given year in one small community study. Onset at any age; strongly associated with severe, repeated childhood trauma."},{"id":"dissociative-amnesia","name":"Dissociative Amnesia","chapter":"diss","note":"Dissociative Disorders · absorbs the former dissociative fugue diagnosis as a specifier","duration":"No minimum duration","threshold":"ALL four criteria (A–D) must be met. Fugue is no longer its own diagnosis — it is now a SPECIFIER you add to dissociative amnesia.","groups":[{"head":"Check all 4:","note":false,"items":["A. Can't recall important autobiographical information, usually traumatic or stressful, far beyond ordinary forgetting","B. Causes real distress or impairment","C. Not caused by a substance, head injury, seizures, or other medical condition","D. Not better explained by DID, PTSD, acute stress disorder, somatic symptom disorder, or a neurocognitive disorder"]},{"head":"Specify if: WITH DISSOCIATIVE FUGUE","note":false,"items":["Purposeful travel or bewildered wandering, with amnesia for identity or other autobiographical information"]},{"head":"Forms the amnesia can take:","note":true,"items":["Localized — a specific window of time (most common)","Selective — some parts of an event but not others","Generalized — whole identity and life history (rare, often sudden)"]}],"prevalence":"About 1.8% of U.S. adults in a given year (1% of men, 2.6% of women). Onset at any age; episodes can last minutes to decades."},{"id":"depersonalization-derealization-disorder","name":"Depersonalization / Derealization Disorder","chapter":"diss","note":"Dissociative Disorders · formerly depersonalization disorder; derealization added in DSM-5","duration":"No minimum — persistent or recurrent","threshold":"ALL five criteria (A–E) must be met. Criterion A is satisfied by depersonalization, derealization, OR both. Criterion B is the one students miss.","groups":[{"head":"A. Persistent or recurrent experiences of either (or both):","note":false,"items":["Depersonalization — feeling unreal or detached from your own thoughts, feelings, body, or actions; like an outside observer of yourself","Derealization — feeling that your surroundings are unreal, dreamlike, foggy, lifeless, or visually distorted"]},{"head":"B – E. Also required:","note":false,"items":["B. Reality testing stays INTACT — the person knows it only feels unreal  ★ key","C. Causes real distress or impairment","D. Not caused by a substance or medical condition (e.g., seizures)","E. Not better explained by another mental disorder"]},{"head":"Teaching note:","note":true,"items":["This is the closest DSM-5-TR diagnosis to what is loosely called a “dissociative episode.” Brief depersonalization is common and is not a disorder."]}],"prevalence":"About 2% (estimates 0.8–2.8%), roughly equal in men and women. Mean onset age 16; onset after 40 is rare."}],"personality":{"intro":"A personality disorder is an enduring, inflexible pattern of inner experience and behavior that begins by adolescence or early adulthood, stays stable over time, shows up across a wide range of situations, and causes distress or impairment. DSM-5-TR sorts the ten into three clusters.","clusters":[{"head":"Cluster A — odd or eccentric","items":[{"name":"Paranoid","desc":"Pervasive distrust and suspicion; reads other people's motives as malicious without good reason."},{"name":"Schizoid","desc":"Detachment from relationships and a narrow range of emotional expression; genuinely prefers to be alone."},{"name":"Schizotypal","desc":"Acute discomfort in close relationships, plus odd beliefs, perceptual distortions, and eccentric speech or behavior."}]},{"head":"Cluster B — dramatic, emotional, or erratic","items":[{"name":"Antisocial","desc":"Disregard for and violation of others' rights: deceit, impulsivity, aggression, no remorse. Needs conduct disorder before 15, and age 18+."},{"name":"Borderline","desc":"Instability of relationships, self-image, and mood, with marked impulsivity and frantic efforts to avoid abandonment."},{"name":"Histrionic","desc":"Excessive emotionality and attention-seeking; uncomfortable when not the center of attention."},{"name":"Narcissistic","desc":"Grandiosity, a need for admiration, and a lack of empathy."}]},{"head":"Cluster C — anxious or fearful","items":[{"name":"Avoidant","desc":"Social inhibition, feelings of inadequacy, and hypersensitivity to criticism; wants closeness but avoids it."},{"name":"Dependent","desc":"Excessive need to be taken care of, leading to submissive, clinging behavior and fear of separation."},{"name":"Obsessive-Compulsive","desc":"Preoccupation with order, perfectionism, and control at the cost of flexibility. NOT the same as OCD — no obsessions or compulsions, and the person sees nothing wrong with it."}]}]}};
+
+const CH_COLOR = {schz:"--c-schz",bip:"--c-bip",dep:"--c-dep",anx:"--c-anx",
+  ocd:"--c-ocd",trauma:"--c-trauma",diss:"--c-diss",pers:"--c-pers"};
+const CH_NAME = Object.fromEntries(DATA.chapters.map(c=>[c.key,c.name]));
+
+// every screen: the 14 disorders, then the personality summary
+const SCREENS = DATA.disorders.map(d=>({id:d.id,name:d.name,chapter:d.chapter,kind:"d",data:d}))
+  .concat([{id:"personality-disorders",name:"Personality Disorders",chapter:"pers",kind:"p"}]);
+
+const WORDS={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,
+  eleven:11,twelve:12,thirteen:13};
+function num(t){ t=String(t).toLowerCase(); return WORDS[t] ?? (/^\d+$/.test(t)?+t:null); }
+function target(head){
+  let m = head.match(/([a-z]+|\d+)\s+of\s+(?:[a-z]+|\d+)/i);
+  if(m){ const n=num(m[1]); if(n) return n; }
+  m = head.match(/all\s+(\d+)/i);
+  if(m) return +m[1];
+  return null;
+}
+
+let store={};
+try{ store = JSON.parse(localStorage.getItem("dsm-checks")||"{}") || {}; }catch(e){ store={}; }
+function save(){ try{ localStorage.setItem("dsm-checks",JSON.stringify(store)); }catch(e){} }
+
+const el = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// the booklet marks required criteria with a star; render it as a coloured glyph
+const mark = s => esc(s).replace(/★/g,'<span class="star">★</span>');
+
+let at = 0;
+
+function render(){
+  const s = SCREENS[at];
+  document.documentElement.style.setProperty("--ch", `var(${CH_COLOR[s.chapter]})`);
+  el("bar-ch").textContent = CH_NAME[s.chapter];
+  el("count").textContent = (at+1) + " / " + SCREENS.length;
+
+  const box = el("screen-in");
+  box.innerHTML = s.kind === "p" ? viewPersonality() : viewDisorder(s.data);
+  el("screen").scrollTop = 0;
+
+  const p = SCREENS[at-1], n = SCREENS[at+1];
+  const pb = el("go-prev"), nb = el("go-next");
+  pb.disabled = !p; nb.disabled = !n;
+  pb.querySelector("span").textContent = p ? p.name : "";
+  nb.querySelector("span").textContent = n ? n.name : "";
+
+  if(location.hash.slice(1) !== s.id) history.replaceState(null,"","#"+s.id);
+  document.title = s.name + " — DSM Booklet";
+  wire(s);
+}
+
+function viewDisorder(d){
+  const groups = d.groups.map((g,gi)=>{
+    if(g.note){
+      return `<section class="grp"><div class="grp-h"><h2>${esc(g.head)}</h2></div>
+        <ul>${g.items.map(i=>`<li class="plain">${mark(i)}</li>`).join("")}</ul></section>`;
+    }
+    const t = target(g.head);
+    const items = g.items.map((i,ii)=>{
+      const on = !!(store[d.id] && store[d.id][gi+"-"+ii]);
+      return `<li class="crit" role="checkbox" tabindex="0" aria-checked="${on}"
+        data-g="${gi}" data-i="${ii}">
+        <span class="box"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+        <p>${mark(i)}</p></li>`;
+    }).join("");
+    return `<section class="grp"><div class="grp-h"><h2>${esc(g.head)}</h2>
+      <span class="tally" data-tally="${gi}" data-target="${t??""}"></span></div>
+      <ul>${items}</ul></section>`;
+  }).join("");
+
+  return `<p class="eyebrow">${esc(CH_NAME[d.chapter])}</p>
+    <h1>${esc(d.name)}</h1>
+    <p class="note">${esc(d.note)}</p>
+    <div class="howlong"><b>How long</b><span>${esc(d.duration)}</span></div>
+    <div class="thresh"><b>Threshold</b><p>${esc(d.threshold)}</p></div>
+    ${groups}
+    <div class="prev"><b>Prevalence &amp; onset</b><p>${esc(d.prevalence)}</p></div>
+    <button class="reset" id="reset">Clear the checkboxes on this page</button>`;
+}
+
+function viewPersonality(){
+  const p = DATA.personality;
+  return `<p class="eyebrow">${esc(CH_NAME.pers)}</p>
+    <h1>Personality Disorders</h1>
+    <p class="note">Short descriptions of all ten · not a criteria checklist</p>
+    <p class="pintro">${esc(p.intro)}</p>
+    ${p.clusters.map(c=>`<section class="pclus"><h2>${esc(c.head)}</h2>
+      ${c.items.map(i=>`<div class="pd"><b>${esc(i.name)}</b> <span>${esc(i.desc)}</span></div>`).join("")}
+    </section>`).join("")}
+    <div class="prev"><p>Each of the ten has its own full criteria set in DSM-5-TR. A diagnosis
+      also requires that the pattern is not better explained by another disorder, a substance,
+      or another medical condition.</p></div>`;
+}
+
+function tallies(){
+  const s = SCREENS[at];
+  if(s.kind !== "d") return;
+  document.querySelectorAll("[data-tally]").forEach(node=>{
+    const gi = node.dataset.tally;
+    const n = document.querySelectorAll(`li.crit[data-g="${gi}"][aria-checked="true"]`).length;
+    const t = node.dataset.target ? +node.dataset.target : null;
+    node.textContent = t ? `${n} / ${t}` : `${n} checked`;
+    node.classList.toggle("met", !!t && n >= t);
+  });
+}
+
+function wire(s){
+  if(s.kind === "d"){
+    document.querySelectorAll("li.crit").forEach(li=>{
+      const hit = ()=>{
+        const on = li.getAttribute("aria-checked") !== "true";
+        li.setAttribute("aria-checked", on);
+        (store[s.id] ||= {})[li.dataset.g+"-"+li.dataset.i] = on;
+        if(!on) delete store[s.id][li.dataset.g+"-"+li.dataset.i];
+        save(); tallies();
+      };
+      li.addEventListener("click", hit);
+      li.addEventListener("keydown", e=>{
+        if(e.key===" "||e.key==="Enter"){ e.preventDefault(); hit(); }
+      });
+    });
+    const r = el("reset");
+    if(r) r.addEventListener("click", ()=>{
+      delete store[s.id]; save();
+      document.querySelectorAll("li.crit").forEach(li=>li.setAttribute("aria-checked","false"));
+      tallies();
+    });
+    tallies();
+  }
+}
+
+function go(i){ if(i>=0 && i<SCREENS.length){ at=i; render(); } }
+
+el("go-prev").addEventListener("click",()=>go(at-1));
+el("go-next").addEventListener("click",()=>go(at+1));
+document.addEventListener("keydown",e=>{
+  if(!el("idx").hidden) { if(e.key==="Escape") closeIdx(); return; }
+  if(e.target.tagName==="INPUT") return;
+  if(e.key==="ArrowLeft") go(at-1);
+  if(e.key==="ArrowRight") go(at+1);
+});
+
+// swipe between disorders
+let x0=null,y0=null;
+const sc = el("screen");
+sc.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; x0=t.clientX; y0=t.clientY; },{passive:true});
+sc.addEventListener("touchend",e=>{
+  if(x0===null) return;
+  const t=e.changedTouches[0], dx=t.clientX-x0, dy=t.clientY-y0;
+  if(Math.abs(dx)>64 && Math.abs(dx)>Math.abs(dy)*1.7) go(dx<0 ? at+1 : at-1);
+  x0=y0=null;
+},{passive:true});
+
+// index
+function buildIdx(q){
+  q = (q||"").trim().toLowerCase();
+  const list = el("idx-list");
+  let html="", lastCh=null, shown=0;
+  SCREENS.forEach((s,i)=>{
+    if(q && !s.name.toLowerCase().includes(q) && !CH_NAME[s.chapter].toLowerCase().includes(q)) return;
+    if(s.chapter !== lastCh){
+      html += `<p class="ich" style="--ch:var(${CH_COLOR[s.chapter]})">${esc(CH_NAME[s.chapter])}</p>`;
+      lastCh = s.chapter;
+    }
+    html += `<button class="irow" data-go="${i}" aria-current="${i===at}"
+      style="--ch:var(${CH_COLOR[s.chapter]})"><em>${i+1}</em>${esc(s.name)}</button>`;
+    shown++;
+  });
+  list.innerHTML = shown ? html : `<p class="empty">Nothing matches that.</p>`;
+  list.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>{
+    closeIdx(); go(+b.dataset.go);
+  }));
+}
+function openIdx(){ el("idx").hidden=false; buildIdx(el("filter").value); }
+function closeIdx(){ el("idx").hidden=true; }
+el("menu").addEventListener("click",openIdx);
+el("close").addEventListener("click",closeIdx);
+el("filter").addEventListener("input",e=>buildIdx(e.target.value));
+
+// open on the hash, if it names a screen
+const want = SCREENS.findIndex(s=>s.id===location.hash.slice(1));
+if(want>=0) at=want;
+window.addEventListener("hashchange",()=>{
+  const i = SCREENS.findIndex(s=>s.id===location.hash.slice(1));
+  if(i>=0 && i!==at) go(i);
+});
+render();
+</script>
+
+</body>
+</html>
